@@ -98,7 +98,6 @@ public class CharacterMovement : MonoBehaviour
             SwordScript.HideSword();
             CanMove = true;
             CharaAnimator.SetBool("IsAttack", false);
-            Debug.Log("공격 모션 완료");
         };    //공격 모션이 끝나면 IsAttack을 거짓으로, CanMove를 true로 설정하여 다시 움직일 수 있게
     }
 }

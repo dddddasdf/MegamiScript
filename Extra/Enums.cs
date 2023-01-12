@@ -36,6 +36,17 @@ public struct EnemyDataStruct
     //여기 스킬 리스트 들어가야 됨
 }
 
+
+/// <summary>
+/// 필드 몬스터 심볼 유형
+/// </summary>
+public enum EnemySymbolType
+{
+    Humanoid,   //인간형
+    Bird,   //새
+    Wild    //야수
+}
+
 /// <summary>
 /// 스탯 구조체
 /// </summary>

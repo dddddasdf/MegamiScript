@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class EnemyObject : MonoBehaviour
 {
@@ -20,22 +21,39 @@ public class EnemyObject : MonoBehaviour
     private Collider[] PlayerTarget;    //유저 추적시 사용
     private bool OnPatrol = false;  //코루틴 오작동 방지용
     private bool OnChase = false;   //코루틴 오작동 방지용
+    private Coroutine CheckingCoroutine;    //유저 어그로 체크용 코루틴
 
     private List<int> EnemyIndexList;
 
+    private Coroutine TimerCoroutine;   //타이머용 코루틴
+
+    public event Action AppearTimerEvent;   //스폰된지 15초가 지나면 스폰 관리자에게 신호를 준다
+
+    /// <summary>
+    /// 몹 심볼이 가지고 있어야 할 정보
+    /// </summary>
+    private struct SymbolObjectData
+    {
+        Vector2 SymbolPosition; //심볼의 2차원 좌표
+        public EnemySymbolType ThisEnemyType;  //필드상에서 표시될 모델링 유형
+    }
 
 
     #endregion
 
-    private void Awake()
+    private void OnEnable()
     {
         EnemyState = State.Wander;
         Controller = GetComponent<EnemyAgent>();
         EnemyIndexList = new List<int>();
-    }
-    private void Start()
-    {
+        SymbolObjectData NewSymbolData;
+        NewSymbolData.ThisEnemyType = EnemySymbolType.Humanoid; //아직은 임시 단계이므로 인간형으로 통일
         Action();
+    }
+
+    private void OnDisable()
+    {
+        
     }
 
     /// <summary>
@@ -45,6 +63,27 @@ public class EnemyObject : MonoBehaviour
     public void SetEnemyIndexList(List<int> EnemyIndexListTmp)
     {
         EnemyIndexList = EnemyIndexListTmp;
+    }
+
+    /// <summary>
+    /// 리스폰 매니저에게서 캐싱용 변수 받아옴
+    /// </summary>
+    /// <param name="AppearTimer">캐싱된 15초</param>
+    public void SetTimer(WaitForSeconds AppearTimer)
+    {
+        TimerCoroutine = StartCoroutine(AppearTimeCheck(AppearTimer));
+    }
+
+    /// <summary>
+    /// 출현한 시간 세기용
+    /// </summary>
+    /// <param name="AppearTimer">출현 시간은 15초</param>
+    /// <returns></returns>
+    private IEnumerator AppearTimeCheck(WaitForSeconds AppearTimer)
+    {
+        yield return AppearTimer;   //15초가 지나면 스폰 매니저에게 회수 요청 전달
+        AppearTimerEvent?.Invoke();
+        AppearTimerEvent = null;
     }
 
     /// <summary>

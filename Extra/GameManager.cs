@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
 
     #region SetVariables
     [SerializeField] private GameObject EnemySpawner; //적 생성 담당 스크립트
-    private EnemyRespawn EnemySpawnManager;
+    private EnemyRespawnManager EnemySpawnManager;
     private Coroutine EnemyCoroutine;
     private PlayerData PlayerDataScript;    //플레이어 정보를 갖고 있는 스크립트
 
@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
 
-            EnemySpawnManager = EnemySpawner.GetComponent<EnemyRespawn>();
+            EnemySpawnManager = EnemySpawner.GetComponent<EnemyRespawnManager>();
             InitDatas();
             
             return;
@@ -30,10 +30,13 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        EnemySpawnManager.SetRespawn();
+        EnemySpawnManager.FindSpawnPosition();
     }
 
     #region Init
+    /// <summary>
+    /// 게임 구동시 데이터 초기화 선언
+    /// </summary>
     private void InitDatas()
     {
         EnemyData.InitEnemyData();   //몬스터 데이터 초기화
@@ -57,16 +60,22 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
+    #region Spawn
+
+
+    #endregion
+
+
     #region Battle
     public void CallBattle()
     {
-        EnemySpawnManager.StopRespawn();
+        EnemySpawnManager.StopSpawn();
         LoadSceneManager.Instance.SetBattleScene();
     }
 
     public void EndBattle()
     {
-        LoadSceneManager.Instance.AddSceneEvent(() => EnemySpawnManager.SetRespawn());
+        LoadSceneManager.Instance.AddSceneEvent(() => EnemySpawnManager.SetSpawn());
         LoadSceneManager.Instance.EndBattleScene();
     }
     #endregion
