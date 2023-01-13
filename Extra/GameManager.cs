@@ -69,13 +69,11 @@ public class GameManager : MonoBehaviour
     #region Battle
     public void CallBattle()
     {
-        EnemySpawnManager.StopSpawn();
         LoadSceneManager.Instance.SetBattleScene();
     }
 
     public void EndBattle()
     {
-        LoadSceneManager.Instance.AddSceneEvent(() => EnemySpawnManager.SetSpawn());
         LoadSceneManager.Instance.EndBattleScene();
     }
     #endregion

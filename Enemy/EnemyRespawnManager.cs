@@ -14,7 +14,8 @@ public class EnemyRespawnManager : MonoBehaviour
     /// <summary>
     /// 리스폰 코루틴 저장용 변수
     /// </summary>
-    private Coroutine RespawnCoroutineVa;
+    private Coroutine SpawnCoroutineVa;
+    private bool IsSpawnCoroutineWork;  //코루틴 동작 확인용 변수
 
     /// <summary>
     /// yield WaitForSeconds 캐싱용, 심볼은 최대 동시 존재 가능수 도달 전까지 2초마다 생성된다
@@ -72,23 +73,20 @@ public class EnemyRespawnManager : MonoBehaviour
     private void Awake()
     {
         NowRandomEnemyCount = 0;    //현재 필드에 있는 몬스터 숫자 0으로 초기화
-        ClearVirables();
+        ClearSpawnVirables();
         RandomSpawnPointList = new List<SpawnPointNode>();  //좌표 리스트 초기화
         RandomSpawnPointIndexList = new List<int>();    //좌표 인덱스 리스트 초기화
         SpawnedPointIndexQueue = new Queue<int>();    //스폰된 몹 큐 초기화
         SpawnDelayTimerCaching = new WaitForSeconds(2.0f); //스폰 딜레이 타이머 캐싱용 변수 초기화
         AppearTimerCaching = new WaitForSeconds(15.0f); //등장 시간 타이머 캐싱용 변수 초기화
+        
         NowPulledObjectNumber = 0;
+        IsSpawnCoroutineWork = false;
     }
 
     private void OnEnable()
     {
-        RespawnCoroutineVa = StartCoroutine(RandomSpawnCoroutine());
-    }
-
-    public void SetPullingObjects()
-    {
-
+        SpawnCoroutineVa = StartCoroutine(RandomSpawnCoroutine());
     }
 
     /// <summary>
@@ -102,19 +100,12 @@ public class EnemyRespawnManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 맵 이동시 멤버 게임오브젝트 변수 초기화
+    /// 맵 이동시 초기화 해야 할 변수들 초기화
     /// </summary>
-    public void ClearVirables()
+    public void ClearSpawnVirables()
     {
         RandomSpawnPointGameObj = null;
         CertainSpawnPointObj = null;
-    }
-
-    /// <summary>
-    /// 좌표 리스트 클리어
-    /// </summary>
-    public void ClearPointList()
-    {
         RandomSpawnPointList.Clear();
     }
 
@@ -144,60 +135,49 @@ public class EnemyRespawnManager : MonoBehaviour
 
 
     /// <summary>
-    /// 유저가 맵 이동 또는 전투 돌입시 모든 심볼이 삭제됨
+    /// 유저가 맵 이동 또는 전투 돌입시 심볼 스폰 중지 및 모든 심볼이 삭제됨
     /// </summary>
-    public void DestoryAllSymbol()
+    public void StopSpawn()
     {
-
+        if (IsSpawnCoroutineWork)
+        {
+            StopCoroutine(SpawnCoroutineVa);
+        }
     }
 
 
 
 
     #region RandomSpawn
-
-    public void SetSpawn()
-    {
-        NowRandomEnemyCount = 0;    //필드상에 나와 있는 몬스터 카운트 0으로 초기화
-        RespawnCoroutineVa = StartCoroutine(SpawnCoroutine());
-    }
-
-    public void StopSpawn()
-    {
-        if (RespawnCoroutineVa != null)
-            StopCoroutine(RespawnCoroutineVa);  //오류 방지용으로 null 체크하고 코루틴 멈추기
-    }
-
     /// <summary>
     /// 2초마다 최대 동시 존재 개체수에 도달했는가 확인하고 도달하지 않았다면 새로운 심볼을 만든다. 한 번 최대 동시 존재 가능수에 도달했다면 코루틴을 종료한다.
     /// </summary>
     /// <returns>2초</returns>
     private IEnumerator RandomSpawnCoroutine()
     {
+        IsSpawnCoroutineWork = true;    //작동 시작하면서 코루틴 동작 확인 변수 true
         while (!(NowRandomEnemyCount >= MaxMonsterCount))
         {
             yield return SpawnDelayTimerCaching;    //2초마다 스폰한다
 
             if (NowRandomEnemyCount < MaxMonsterCount)
             {
-                int PickedIndex;
-                PickedIndex = PickRandomSpawnPoint();
-                SymbolObjectPulling(PickedIndex);
+                RandomSpawn();
 
                 NowRandomEnemyCount++;
             }
         }
+        IsSpawnCoroutineWork = false;   //완료 후 코루틴 동작 확인 변수 false
     }
 
     /// <summary>
     /// 최대 동시 존재 개체수에 도달하면 이후로 이 함수를 호출해서 오브젝트 회수 및 재풀링
     /// </summary>
-    private void RandomSpawnMaxCount()
+    private void RandomSpawn()
     {
         int PickedIndex;
         PickedIndex = PickRandomSpawnPoint();
-        SymbolObjectPulling(PickedIndex);
-        Debug.Log("!");
+        PullingSymbolObject(PickedIndex);
     }
 
     /// <summary>
@@ -222,22 +202,22 @@ public class EnemyRespawnManager : MonoBehaviour
     {
         int IndexNumber = SpawnedPointIndexQueue.Dequeue(); //큐에서 인덱스 디큐
         RandomSpawnPointIndexList.Add(IndexNumber);
-        
     }
 
     /// <summary>
     /// 풀링용 오브젝트를 맵상에 릴리즈
     /// </summary>
     /// <param name="PickedIndex"> 좌표 위치 </param>
-    private void SymbolObjectPulling(int PickedIndex)
+    private void PullingSymbolObject(int PickedIndex)
     {
-        PullingObjects[NowPulledObjectNumber].transform.position = RandomSpawnPointList[PickedIndex].PointData; //풀링할 오브젝트의 위치를 뽑힌 인덱스에 위치한 좌표로 갱신
-        PullingObjects[NowPulledObjectNumber].GetComponent<EnemyObject>().AppearTimerEvent += () =>
+        GameObject NowPullObject = PullingObjects[NowPulledObjectNumber];
+        NowPullObject.transform.position = RandomSpawnPointList[PickedIndex].PointData; //풀링할 오브젝트의 위치를 뽑힌 인덱스에 위치한 좌표로 갱신
+        NowPullObject.GetComponent<EnemyObject>().AppearTimerEvent += () =>
         {
-            SymbolObjectFetch(PullingObjects[NowPulledObjectNumber]);    //15초가 되면 회수 함수 호출하도록 예약
+            FetchSymbolObject(NowPullObject);    //15초가 되면 회수 함수 호출하도록 예약
         };
-        PullingObjects[NowPulledObjectNumber].SetActive(true);  //옮겨진 오브젝트를 활성화
-        PullingObjects[NowPulledObjectNumber].GetComponent<EnemyObject>().SetTimer(AppearTimerCaching); //타이머 설정
+        NowPullObject.SetActive(true);  //옮겨진 오브젝트를 활성화
+        NowPullObject.GetComponent<EnemyObject>().SetTimer(AppearTimerCaching); //타이머 설정
 
         NowPulledObjectNumber++;
         if (NowPulledObjectNumber == PullingObjects.Count)
@@ -247,40 +227,21 @@ public class EnemyRespawnManager : MonoBehaviour
     /// <summary>
     /// 맵상에 풀링된 오브젝트 회수
     /// </summary>
-    private void SymbolObjectFetch(GameObject PulledObject)
+    private void FetchSymbolObject(GameObject PulledObject)
     {
         Debug.Log("회수");
         PulledObject.SetActive(false);  //회수한 오브젝트 비활성화
         PulledObject.transform.position = new Vector3(1000, 1000, 1000); //회수한 오브젝트의 위치를 동떨어진 곳으로 옮기기
+        FetchRandomSpawnPoint();
 
-        RandomSpawnMaxCount();
+        RandomSpawn();
     }
 
 
 
 
     //아래에 있는 코드들은 전부 무시하라 처음부터 다시 짜야한다
-    /// <summary>
-    /// 랜덤 위치에 몬스터 생성
-    /// </summary>
-    private IEnumerator SpawnCoroutine()
-    {
-        while (!(NowRandomEnemyCount == MaxMonsterCount))
-        {
-            GameObject NewEnemy = Instantiate(EnemyPrefab); //새 몬스터 개체 생성
 
-            //해당 몬스터 필드 개체가 갖게 될 몬스터 인덱스 리스트
-            List<int> MonsterIndexList = new List<int>();
-            SetRandomIndex(MonsterIndexList);
-            NewEnemy.GetComponent<EnemyObject>().SetEnemyIndexList(MonsterIndexList);
-
-            //몬스터 리스폰 위치
-            //NewEnemy.transform.position = SetRandomPosition();
-
-            NowRandomEnemyCount++;  //현재 필드 상에 나와 있는 몬스터 카운트 증가
-            yield return null;
-        }
-    }
 
     /// <summary>
     /// 몬스터 인덱스 랜덤 생성 후 리스트에 추가
