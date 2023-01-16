@@ -106,6 +106,13 @@ public class EnemyRespawnManager : MonoBehaviour
     {
         RandomSpawnPointGameObj = null;
         CertainSpawnPointObj = null;
+    }
+
+    /// <summary>
+    /// 랜덤 스폰 좌표 리스트 클리어 / 오류 때문에 별도로 분리함
+    /// </summary>
+    public void ClearSpawnPointList()
+    {
         RandomSpawnPointList.Clear();
     }
 
@@ -232,9 +239,9 @@ public class EnemyRespawnManager : MonoBehaviour
         Debug.Log("회수");
         PulledObject.SetActive(false);  //회수한 오브젝트 비활성화
         PulledObject.transform.position = new Vector3(1000, 1000, 1000); //회수한 오브젝트의 위치를 동떨어진 곳으로 옮기기
-        FetchRandomSpawnPoint();
-
         RandomSpawn();
+        FetchRandomSpawnPoint();
+        //같은 자리에서 바로 재스폰 하지 않는 구조라 먼저 다른 지점에 생성 후 인덱스를 큐에서 회수한다
     }
 
 

@@ -16,7 +16,7 @@ public class EnemyAgent : MonoBehaviour
         
     private float Magnitude;
     private Vector3 EndPosition;
-    private int MoveProbability = 30;   //적이 서있다가 움직일 확률은 30%
+    private int MoveProbability = 50;   //적이 서있다가 움직일 확률은 50%
     private bool IsMoving = false;
     private float RandomDistanceMin = -3f;
     private float RandomDistanceMax = 3f;
@@ -31,7 +31,16 @@ public class EnemyAgent : MonoBehaviour
     private Coroutine WanderMove;   //배회 중 애니메이션 코루틴
     private Coroutine ChaseMove;    //추적 담당 코루틴
 
+    private WaitForSeconds NewWanderPointDelay; //좌표 찍는데 걸리는 딜레이 시간 캐싱용
+    private WaitForSeconds MovingDelay; //이동 딜레이 시간 캐싱용
+
     #endregion
+
+    private void Awake()
+    {
+        NewWanderPointDelay = new WaitForSeconds(3.0f);
+        MovingDelay = new WaitForSeconds(7.0f);
+    }
 
     private void OnEnable()
     {
@@ -82,14 +91,14 @@ public class EnemyAgent : MonoBehaviour
     
     public IEnumerator WanderCoroutine()
     {
-        yield return new WaitForSeconds(3f);    //바로 새로운 좌표 찍는 게 아니라 3초 대기 후 새로운 좌표 찍기 시작
+        yield return NewWanderPointDelay;    //바로 새로운 좌표 찍는 게 아니라 3초 대기 후 새로운 좌표 찍기 시작
 
         while (true)
         {
             if (!IsMoving)
                 ChooseNewPosition();
         
-            yield return new WaitForSeconds(7f);
+            yield return MovingDelay;
         }
     }
 
