@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
 
     #region SetVariables
     [SerializeField] private GameObject EnemySpawner; //적 생성 담당 스크립트
-    private EnemyRespawnManager EnemySpawnManager;
+    private EnemyRespawnManager DemonSpawnManager;
     private Coroutine EnemyCoroutine;
     private PlayerData PlayerDataScript;    //플레이어 정보를 갖고 있는 스크립트
 
@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
 
-            EnemySpawnManager = EnemySpawner.GetComponent<EnemyRespawnManager>();
+            DemonSpawnManager = EnemySpawner.GetComponent<EnemyRespawnManager>();
             InitDatas();
             
             return;
@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        EnemySpawnManager.FindSpawnPosition();
+        DemonSpawnManager.FindSpawnPosition();
     }
 
     #region Init
@@ -69,12 +69,15 @@ public class GameManager : MonoBehaviour
     #region Battle
     public void CallBattle()
     {
+        DemonSpawnManager.StopSpawn();  //스폰 매니저에게 스폰 중지 요청
         LoadSceneManager.Instance.SetBattleScene();
+
     }
 
     public void EndBattle()
     {
         LoadSceneManager.Instance.EndBattleScene();
+        DemonSpawnManager.StartSpawn();
     }
     #endregion
 

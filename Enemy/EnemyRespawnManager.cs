@@ -34,7 +34,7 @@ public class EnemyRespawnManager : MonoBehaviour
     /// </summary>
     [SerializeField] private List<GameObject> PullingObjects;
 
-    private int NowPulledObjectNumber;  //현재 풀링된 오브젝트 숫자 기록용
+    private int NowPulledObjectNumber;  //현재 풀링된 오브젝트 순서 기록용
 
     //좌표 관련 변수
     /// <summary>
@@ -72,13 +72,14 @@ public class EnemyRespawnManager : MonoBehaviour
 
     private void Awake()
     {
-        NowRandomEnemyCount = 0;    //현재 필드에 있는 몬스터 숫자 0으로 초기화
-        ClearSpawnVirables();
         RandomSpawnPointList = new List<SpawnPointNode>();  //좌표 리스트 초기화
         RandomSpawnPointIndexList = new List<int>();    //좌표 인덱스 리스트 초기화
         SpawnedPointIndexQueue = new Queue<int>();    //스폰된 몹 큐 초기화
         SpawnDelayTimerCaching = new WaitForSeconds(2.0f); //스폰 딜레이 타이머 캐싱용 변수 초기화
         AppearTimerCaching = new WaitForSeconds(15.0f); //등장 시간 타이머 캐싱용 변수 초기화
+        
+        NowRandomEnemyCount = 0;    //현재 필드에 있는 몬스터 숫자 0으로 초기화
+        ClearSpawnVirables();
         
         NowPulledObjectNumber = 0;
         IsSpawnCoroutineWork = false;
@@ -86,7 +87,7 @@ public class EnemyRespawnManager : MonoBehaviour
 
     private void OnEnable()
     {
-        SpawnCoroutineVa = StartCoroutine(RandomSpawnCoroutine());
+        StartSpawn();
     }
 
     /// <summary>
@@ -100,7 +101,7 @@ public class EnemyRespawnManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 맵 이동시 초기화 해야 할 변수들 초기화
+    /// 맵 이동시 초기화 해야 할 변수들 초기화-전투 이동시에는 X 무조건 다른 맵으로 이동할 때만 호출
     /// </summary>
     public void ClearSpawnVirables()
     {
@@ -140,6 +141,13 @@ public class EnemyRespawnManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 스폰 시작
+    /// </summary>
+    public void StartSpawn()
+    {
+        SpawnCoroutineVa = StartCoroutine(RandomSpawnCoroutine());
+    }
 
     /// <summary>
     /// 유저가 맵 이동 또는 전투 돌입시 심볼 스폰 중지 및 모든 심볼이 삭제됨
@@ -150,8 +158,28 @@ public class EnemyRespawnManager : MonoBehaviour
         {
             StopCoroutine(SpawnCoroutineVa);
         }
-    }
 
+        //필드상에 풀링된 모든 오브젝트 회수
+        for (int i = 0; i < PullingObjects.Count; i++)
+        {
+            if (PullingObjects[i].activeSelf)
+            {
+                PullingObjects[i].SetActive(false);
+                PullingObjects[i].transform.position = new Vector3(1000, 1000, 1000);
+            }
+        }
+
+        //큐에 들어가 있는 모든 랜덤 좌표 인덱스를 인덱스 리스트로 반환
+        while(SpawnedPointIndexQueue.Count != 0)
+        {
+            int IndexNumber = SpawnedPointIndexQueue.Dequeue(); //큐에서 인덱스 디큐
+            RandomSpawnPointIndexList.Add(IndexNumber);
+        }
+
+        NowRandomEnemyCount = 0;    //현재 필드에 있는 몬스터 숫자 0으로 초기화
+        NowPulledObjectNumber = 0;
+        IsSpawnCoroutineWork = false;
+    }
 
 
 
@@ -178,13 +206,19 @@ public class EnemyRespawnManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 최대 동시 존재 개체수에 도달하면 이후로 이 함수를 호출해서 오브젝트 회수 및 재풀링
+    /// 랜덤 좌표 고르고 풀링하도록 하는 함수/최대 동시 존재 개체수에 도달하면 코루틴을 탈출하고 이 함수를 호출해서 오브젝트 회수 및 재풀링
     /// </summary>
     private void RandomSpawn()
     {
-        int PickedIndex;
+        //랜덤 좌표 인덱스 추출 부분
+        int PickedIndex;    //랜덤한 좌표 인덱스를 받아올 변수
         PickedIndex = PickRandomSpawnPoint();
-        PullingSymbolObject(PickedIndex);
+
+        //악마 정보 추출 부분
+        List<int> DemonDataIndexList = new List<int>(); //해당 오브젝트가 가지게 될 악마 정보
+        SetRandomIndex(DemonDataIndexList);
+
+        PullingSymbolObject(PickedIndex, DemonDataIndexList);
     }
 
     /// <summary>
@@ -215,16 +249,23 @@ public class EnemyRespawnManager : MonoBehaviour
     /// 풀링용 오브젝트를 맵상에 릴리즈
     /// </summary>
     /// <param name="PickedIndex"> 좌표 위치 </param>
-    private void PullingSymbolObject(int PickedIndex)
+    /// <param name="DemonDataIndexList"></param>
+    private void PullingSymbolObject(int PickedIndex, List<int> DemonDataIndexList)
     {
         GameObject NowPullObject = PullingObjects[NowPulledObjectNumber];
+        EnemyObject NowPullObjectData = NowPullObject.GetComponent<EnemyObject>();
+
         NowPullObject.transform.position = RandomSpawnPointList[PickedIndex].PointData; //풀링할 오브젝트의 위치를 뽑힌 인덱스에 위치한 좌표로 갱신
-        NowPullObject.GetComponent<EnemyObject>().AppearTimerEvent += () =>
+        NowPullObjectData.SetEnemyIndexList(DemonDataIndexList);    //풀링할 오브젝트에 악마 리스트 넣어주기
+
+        //함수 호출 예약 부분
+        NowPullObjectData.AppearTimerEvent += () =>
         {
             FetchSymbolObject(NowPullObject);    //15초가 되면 회수 함수 호출하도록 예약
         };
+
         NowPullObject.SetActive(true);  //옮겨진 오브젝트를 활성화
-        NowPullObject.GetComponent<EnemyObject>().SetTimer(AppearTimerCaching); //타이머 설정
+        NowPullObjectData.SetTimer(AppearTimerCaching); //타이머 설정
 
         NowPulledObjectNumber++;
         if (NowPulledObjectNumber == PullingObjects.Count)
@@ -244,19 +285,13 @@ public class EnemyRespawnManager : MonoBehaviour
         //같은 자리에서 바로 재스폰 하지 않는 구조라 먼저 다른 지점에 생성 후 인덱스를 큐에서 회수한다
     }
 
-
-
-
-    //아래에 있는 코드들은 전부 무시하라 처음부터 다시 짜야한다
-
-
     /// <summary>
     /// 몬스터 인덱스 랜덤 생성 후 리스트에 추가
     /// </summary>
     /// <param name="MonsterIndexList"></param>
     private void SetRandomIndex(List<int> MonsterIndexList)
     {
-        int MonsterCount = Random.Range(1, MaxMonsterCount);    //1마리부터 최대 마릿수까지 전투 한 번 당 적마릿수 랜덤 생성
+        int MonsterCount = Random.Range(2, 4);    //전투 한 번에 나올 수 있는 잡몹 악마의 수: 최소 2, 최대 4
 
         for (int i = 0; i < MonsterCount; i++)
         {
@@ -264,8 +299,13 @@ public class EnemyRespawnManager : MonoBehaviour
             MonsterIndexList.Add(NewMonsterIndex);  //생성한 인덱스를 임시 리스트에 추가
         }
     }
-
-
+  
+    
+    /*
+     지금은 전부 인간형으로 통일시켜놨지만 추후 몹 추출하는 것도 바꿔야 함
+    필드상에서 보이는 모델링에 따라 나오는 몬스터들은 고정되어있는데 생성할 때 어떤 유형의 몬스터 집단인지 정한 다음->몬스터 정보를 추출하고->알맞은 형태의 오브젝트에 정보 넣은 다음 풀링하도록 변경 필요
+     집단전은 현재 구현X 하지만 이것도 구현해야
+     */
 
     #endregion
 

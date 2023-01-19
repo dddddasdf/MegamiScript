@@ -37,23 +37,25 @@ public class EnemyObject : MonoBehaviour
         Vector2 SymbolPosition; //심볼의 2차원 좌표
         public EnemySymbolType ThisEnemyType;  //필드상에서 표시될 모델링 유형
     }
-
-
     #endregion
 
-    private void OnEnable()
+    private void Awake()
     {
-        EnemyState = State.Wander;
         Controller = GetComponent<EnemyAgent>();
+        EnemyState = State.Wander;
         EnemyIndexList = new List<int>();
         SymbolObjectData NewSymbolData;
         NewSymbolData.ThisEnemyType = EnemySymbolType.Humanoid; //아직은 임시 단계이므로 인간형으로 통일
+    }
+
+    private void OnEnable()
+    {
         Action();
     }
 
     private void OnDisable()
     {
-        
+        EnemyIndexList.Clear(); //악마 리스트 클리어
     }
 
     /// <summary>
@@ -94,8 +96,8 @@ public class EnemyObject : MonoBehaviour
     {
         if (Collision.collider == PlayerTarget[0])
         {
-            EnemyData.SetIndexList(EnemyIndexList); //몬스터 데이터 스크립트에게 임시적으로 가지고 있는 인덱스 목록을 넘겨줌
-            GameManager.Instance.CallBattle();
+            EnemyData.SetIndexList(EnemyIndexList); //악마 데이터 담당 스크립트에게 가지고 있는 인덱스 목록을 넘겨줌
+            GameManager.Instance.CallBattle();  //게임 매니저에게 배틀 호출 요청
             Debug.Log("충돌!");
         }
     }
