@@ -27,7 +27,7 @@ public class EnemyObject : MonoBehaviour
 
     private Coroutine TimerCoroutine;   //타이머용 코루틴
 
-    public event Action AppearTimerEvent;   //스폰된지 15초가 지나면 스폰 관리자에게 신호를 준다
+    private event Action AppearTimerEvent;   //스폰된지 15초가 지나면 스폰 관리자에게 신호를 준다
 
     /// <summary>
     /// 몹 심볼이 가지고 있어야 할 정보
@@ -56,6 +56,7 @@ public class EnemyObject : MonoBehaviour
     private void OnDisable()
     {
         EnemyIndexList.Clear(); //악마 리스트 클리어
+        AppearTimerEvent = null;    //함수 예약 리스트 클리어
     }
 
     /// <summary>
@@ -86,6 +87,18 @@ public class EnemyObject : MonoBehaviour
         yield return AppearTimer;   //15초가 지나면 스폰 매니저에게 회수 요청 전달
         AppearTimerEvent?.Invoke();
         AppearTimerEvent = null;
+    }
+
+    /// <summary>
+    /// 이벤트 리스트에 함수 추가
+    /// </summary>
+    /// <param name="fetchSymbolObject">예약 목록에 추가할 함수</param>
+    public void GetAppearTimeEvent(Action fetchSymbolObject)
+    {
+        AppearTimerEvent += () =>
+        {
+            fetchSymbolObject();    //15초가 되면 회수 함수 호출하도록 예약
+        };
     }
 
     /// <summary>

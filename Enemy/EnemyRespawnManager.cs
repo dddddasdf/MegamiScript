@@ -159,7 +159,7 @@ public class EnemyRespawnManager : MonoBehaviour
             StopCoroutine(SpawnCoroutineVa);
         }
 
-        //필드상에 풀링된 모든 오브젝트 회수
+        //필드상에 풀링된 모든 오브젝트 회수 및 초기화
         for (int i = 0; i < PullingObjects.Count; i++)
         {
             if (PullingObjects[i].activeSelf)
@@ -259,10 +259,7 @@ public class EnemyRespawnManager : MonoBehaviour
         NowPullObjectData.SetEnemyIndexList(DemonDataIndexList);    //풀링할 오브젝트에 악마 리스트 넣어주기
 
         //함수 호출 예약 부분
-        NowPullObjectData.AppearTimerEvent += () =>
-        {
-            FetchSymbolObject(NowPullObject);    //15초가 되면 회수 함수 호출하도록 예약
-        };
+        NowPullObjectData.GetAppearTimeEvent(() => FetchSymbolObject(NowPullObject));  //15초가 되면 회수 함수 호출하도록 예약
 
         NowPullObject.SetActive(true);  //옮겨진 오브젝트를 활성화
         NowPullObjectData.SetTimer(AppearTimerCaching); //타이머 설정
