@@ -58,3 +58,25 @@ public struct Status
     public int Speed;
     public int Luck;
 }
+
+/// <summary>
+/// 전투 치를 때 스킬, 아이템, 대화 시도 등의 버튼에 대한 설명 구조체
+/// </summary>
+[System.Serializable]
+public struct HelpText
+{
+    public string Code;
+    public string Text;
+}
+
+/// <summary>
+/// 전투 치를 때 스킬에 대한 설명
+/// </summary>
+[System.Serializable] 
+public struct SkillInfo
+{
+    public string Type; //공격 유형
+    public string Name; //스킬명
+    public int Power;   //위력
+
+}

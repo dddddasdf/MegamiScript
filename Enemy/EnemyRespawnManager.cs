@@ -66,6 +66,8 @@ public class EnemyRespawnManager : MonoBehaviour
     /// 스폰된 몹 인덱스 "번호" 저장용 큐
     /// </summary>
     private Queue<int> SpawnedPointIndexQueue;
+    
+    //좌표 관련 변수 종료
 
     #endregion
 
