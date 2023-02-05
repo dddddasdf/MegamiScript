@@ -5,6 +5,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 using System.Text;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class BattleUI : MonoBehaviour
 {
@@ -20,7 +22,7 @@ public class BattleUI : MonoBehaviour
 
     private void OnEnable()
     {
-        BattleManagerScript = BattleManagerObject.GetComponent<BattleManager>();
+        //BattleManagerScript = BattleManagerObject.GetComponent<BattleManager>();
     }
 
     public void TestFn()

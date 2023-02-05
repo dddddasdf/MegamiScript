@@ -21,16 +21,16 @@ public class BattleManager : MonoBehaviour
 
     private void Awake()
     {
-        BattleEnemyDataList = new List<MonsterData>();
+        //BattleEnemyDataList = new List<MonsterData>();
         BattleUIScript = BattleCanvasObject.GetComponent<BattleUI>();
-        PartyMemberArray = new PartyMember[4];  //파티 정보 배열 초기화
+        //PartyMemberArray = new PartyMember[4];  //파티 정보 배열 초기화
     }
 
     private void Start()
     {
-        GetEnemyData();
-        SetPartyData();
-        SetPlayerTurn();
+        //GetEnemyData();
+        //SetPartyData();
+        //SetPlayerTurn();
     }
 
     #region SetBattleInfo

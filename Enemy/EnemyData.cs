@@ -11,6 +11,9 @@ public class EnemyData
 
     private static List<int> BattleEnemyListTmp;   //전투 돌입하기 전 부딪친 몹 객체로부터 임시로 몹 인덱스 리스트를 받아 저장하는 용도
 
+    /// <summary>
+    /// 호출용
+    /// </summary>
     public EnemyData()
     {
         
@@ -24,6 +27,14 @@ public class EnemyData
         MonsterDataList = new List<MonsterData>();
 
         AsyncOperationHandle<TextAsset> LoadHandle = Addressables.LoadAssetAsync<TextAsset>("MonsterData");
+
+#if UNITY_EDITOR
+        if (LoadHandle.Status == AsyncOperationStatus.Failed)
+        {
+            Debug.Log("몬스터 데이터 파일 로드 실패");
+        }
+
+#endif
         LoadHandle.Completed += Handle =>
         {
             //몬스터 데이터 파일을 전부 읽어들였으면 역직렬화 하여 리스트에 저장
@@ -31,6 +42,7 @@ public class EnemyData
             MonsterDataList = JsonConvert.DeserializeObject<List<MonsterData>>(DataStack.text);
             Addressables.Release(LoadHandle);   //리스트에 데이터 저장 완료했으므로 어드레서블 해제
         };
+
 
         BattleEnemyListTmp = new List<int>(); //
     }

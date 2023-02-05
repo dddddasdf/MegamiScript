@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
             Instance = this;
 
             DemonSpawnManager = EnemySpawner.GetComponent<EnemyRespawnManager>();
-            InitDatas();
+            InitDataFiles();
             
             return;
         }
@@ -37,9 +37,10 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// 게임 구동시 데이터 초기화 선언
     /// </summary>
-    private void InitDatas()
+    private void InitDataFiles()
     {
         EnemyData.InitEnemyData();   //몬스터 데이터 초기화
+        HelpTextData.InitHelpTextData();    //도움말 텍스트 데이터 초기화
         PlayerDataScript = new PlayerData();
         PlayerDataScript.SetPlayerTmp();
     }

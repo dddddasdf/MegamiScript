@@ -59,6 +59,52 @@ public struct Status
     public int Luck;
 }
 
+
+
+//스킬 관련 단락
+#region Skill
+
+/// <summary>
+/// 공격 스킬 유형 목록
+/// </summary>
+public enum AttackType
+{
+    Physical,   //물리
+    Gun,    //총
+    Fire,   //화염
+    Ice,    //빙결
+    Electric,   //전격
+    Force,  //충격
+    Light,  //파마
+    Dark,   //주살
+    Almighty    //만능
+}
+
+/// <summary>
+/// 전투 치를 때 스킬에 대한 설명
+/// </summary>
+[System.Serializable] 
+public struct AttackSkill
+{
+    public AttackType TypeName; //공격 스킬 유형
+    public string Name; //스킬명
+    public int Power;   //위력
+    public int Accuracy;    //명중률
+    public int UseMP;   //소모 마나양
+
+    public bool IsAdditionalEffect;    //부가효과 유무
+
+}
+
+public struct AttackAddtional
+{
+
+
+}
+
+#endregion
+
+#region Help
 /// <summary>
 /// 전투 치를 때 스킬, 아이템, 대화 시도 등의 버튼에 대한 설명 구조체
 /// </summary>
@@ -69,14 +115,20 @@ public struct HelpText
     public string Text;
 }
 
-/// <summary>
-/// 전투 치를 때 스킬에 대한 설명
-/// </summary>
-[System.Serializable] 
-public struct SkillInfo
-{
-    public string Type; //공격 유형
-    public string Name; //스킬명
-    public int Power;   //위력
+#endregion
 
+#region BattleMenu
+
+/// <summary>
+/// 하위 버튼들이 있는 메뉴 목록
+/// </summary>
+[System.Serializable]
+enum MenuName
+{
+    Act = 0,    //유저 및 동료 악마가 취할 수 있는 전체 행동 목록을 출력하는 메뉴
+    Skill = 1,
+    Talk = 2,
+    Item = 3
 }
+
+#endregion
