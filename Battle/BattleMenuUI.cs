@@ -37,8 +37,8 @@ public class BattleMenuUI : MonoBehaviour
 
     
     //키입력 관련 변수
-    private bool IsCanInput;    //유저의 키입력을 현재 받을지 말지 결정-연출 동안 유저의 키 입력을 아예 받을지 말지 일단 확인용... 쓸데없는 오작동은 막는 게 좋다
-    private Coroutine GetInputCoroutine;
+    //private bool IsCanInput;    //유저의 키입력을 현재 받을지 말지 결정-연출 동안 유저의 키 입력을 아예 받을지 말지 일단 확인용... 쓸데없는 오작동은 막는 게 좋다
+    //private Coroutine GetInputCoroutine;
 
 
     #endregion
@@ -54,16 +54,23 @@ public class BattleMenuUI : MonoBehaviour
 
         NowSelectedActIndex = 1;
 
-        NowSelectedSkillIndex = 1;
+        NowSelectedSkillIndex = 0;
 
-        IsCanInput = true;
-        GetInputCoroutine =  StartCoroutine(GetPlayerKeyboardInput());
+        //IsCanInput = true;
+        //GetInputCoroutine =  StartCoroutine(GetPlayerKeyboardInput());
+
+        
     }
 
     private void OnEnable()
     {
         SetDefaultSelectedActMenuButton();
     }
+
+    //private void Update()
+    //{
+    //    //GetKeyboardInput();
+    //}
 
     /// <summary>
     /// 메뉴를 처음 열면 가장 기본적으로 선택되는 버튼은 스킬
@@ -145,7 +152,7 @@ public class BattleMenuUI : MonoBehaviour
     /// </summary>
     private void SetDefaultSelectedSkillButton()
     {
-        NowSelectedButton = SkillButton[0]; //첫번째 스킬이 활성화된 버튼으로
+        NowSelectedButton = SkillButton[NowSelectedSkillIndex];
         NowSelectedButton.image.color = SelectedSkillButtonColor;
     }
 
@@ -165,7 +172,6 @@ public class BattleMenuUI : MonoBehaviour
             NowSelectedButton = Tmp;
             Tmp.image.color = SelectedSkillButtonColor;
             NowSelectedSkillIndex = int.Parse(Regex.Replace(Tmp.name, @"[^0-9]", ""));
-            Debug.Log("활성화 된 버튼 교체");
             Debug.Log(NowSelectedSkillIndex);
         }
     }
@@ -198,20 +204,76 @@ public class BattleMenuUI : MonoBehaviour
         //}
     }
 
+    /// <summary>
+    /// 스킬 메뉴에서 뒤로 가기 버튼을 눌러서 행동 메뉴 캔버스 오픈
+    /// </summary>
+    public void BackFromSkillToActMenu()
+    {
+        SelectSkillMenuCanvas.enabled = false;
+        SelectActMenuCanvas.enabled = true;
+        NowSelectedButton = SkillMenuButton;
+        NowSelectedButton.image.color = SelectedActButtonColor;
+    }
 
+    #endregion
+
+    #region ResetSelectedButtons
 
     #endregion
 
 
     #region GetInput
     /// <summary>
-    /// 유저 키보드 조작 키입력 받는 곳
+    /// 유저 키 입력 받는 함수
+    /// </summary>
+    private void GetKeyboardInput()
+    {
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            //키입력 받음
+            if (NowSelectedSkillIndex != 1)
+            {
+                NowSelectedButton.image.color = UnselectedSkillButtonColor;
+                NowSelectedSkillIndex--;
+                NowSelectedButton = SkillButton[NowSelectedSkillIndex - 1];
+                NowSelectedButton.image.color = SelectedSkillButtonColor;
+
+                
+
+
+
+                Debug.Log(NowSelectedSkillIndex);
+            }
+
+        }
+
+        //아래쪽 버튼
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            if (NowSelectedSkillIndex != 8)
+            {
+                NowSelectedButton.image.color = UnselectedSkillButtonColor;
+                NowSelectedSkillIndex++;
+                NowSelectedButton = SkillButton[NowSelectedSkillIndex - 1];
+                NowSelectedButton.image.color = SelectedSkillButtonColor;
+                Debug.Log(NowSelectedSkillIndex);
+            }
+        }
+
+        //결정 버튼
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+
+        }
+    }
+    
+    
+    /// <summary>
+    /// 유저 키보드 조작 키입력 받는 곳 - 더미
     /// </summary>
     /// <returns></returns>
-    private IEnumerator GetPlayerKeyboardInput()
+    /*private IEnumerator GetPlayerKeyboardInput()
     {
-        
-
         while (true)
         {
             //위쪽 버튼
@@ -242,16 +304,14 @@ public class BattleMenuUI : MonoBehaviour
                 }
             }
 
-            yield return null;
+            //결정 버튼
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+
+            }
+
+                yield return null;
         }
-        
-
-        
-
-        //결정 버튼
-        //if (Input.GetKey(KeyCode.F))
-            ;
-    }
-
+    }*/
     #endregion
 }

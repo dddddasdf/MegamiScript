@@ -125,13 +125,12 @@ public struct HelpText
 [System.Serializable]
 enum BattleMenuName
 {
-    Act = 0,    //유저 및 동료 악마가 취할 수 있는 전체 행동 목록을 출력하는 메뉴
-    SkillMenuButton = 1,
-    ItemMenuButton = 2,
-    TalkMenuButton = 3,
-    ChangeMenuButton = 4,
-    EscapeMenuButton = 5,
-    PassMenuButton = 6
+    SkillMenuButton = 0,
+    ItemMenuButton = 1,
+    TalkMenuButton = 2,
+    ChangeMenuButton = 3,
+    EscapeMenuButton = 4,
+    PassMenuButton = 5
 }
 
 #endregion
