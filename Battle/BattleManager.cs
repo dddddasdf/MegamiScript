@@ -9,7 +9,7 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private GameObject BattleCanvasObject;
     private List<MonsterData> BattleEnemyDataList;
 
-    private BattleUI BattleUIScript;
+    [SerializeField] private BattleUI BattleUIScript;
     [SerializeField] private PartyUI PartyUIScript;
     [SerializeField] private TurnUI TurnUIScript;
 
@@ -22,7 +22,7 @@ public class BattleManager : MonoBehaviour
     private void Awake()
     {
         //BattleEnemyDataList = new List<MonsterData>();
-        BattleUIScript = BattleCanvasObject.GetComponent<BattleUI>();
+
         //PartyMemberArray = new PartyMember[4];  //파티 정보 배열 초기화
     }
 

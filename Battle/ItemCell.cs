@@ -7,37 +7,40 @@ using Gpm.Ui;
 
 public class ItemCell : InfiniteScrollItem
 {
-    public TextMeshProUGUI ItemName;    //아이템명
-    public TextMeshProUGUI NumberOfPossess; //아이템 소지수
-    public Image ItemThumbnail; //아이템 썸네일
+    [SerializeField] private TextMeshProUGUI ItemName;    //아이템명
+    [SerializeField] private TextMeshProUGUI NumberOfPossess; //아이템 소지수
+    [SerializeField] private Image ItemThumbnail; //아이템 썸네일
+    [SerializeField] private Image ThisCellImage;
 
-    private UsableItemInformaiton ItemInfo;
-    private int CellIndex;
+    private ItemCellData ThisCellData;  //이 오브젝트가 보여줄 아이템 내용
 
+    private Color SelectedButtonColor = new Color(0 / 255f, 0 / 255f, 0 / 255f, 255 / 255f); //선택된 스킬 버튼 색상+투명도
+    private Color UnselectedButtonColor = new Color(255 / 255f, 255 / 255f, 255 / 255f, 100 / 255f);   //선택되지 않은 스킬 버튼 색상+투명도
+
+
+    /// <summary>
+    /// 보여줄 내용 교체
+    /// </summary>
+    /// <param name="scrollData"></param>
     public override void UpdateData(InfiniteScrollData scrollData)
     {
         base.UpdateData(scrollData);
 
-        UsableItemInformaiton ItemInfo = (UsableItemInformaiton)scrollData;
-        ItemName.text = ItemInfo.Name.ToString();
-        NumberOfPossess.text = ItemInfo.NumberOfNowPossess + "/" + ItemInfo.NumberOfMax.ToString();
+        ThisCellData = (ItemCellData)scrollData;
+        ItemName.text = ThisCellData.ItemInfo.Name.ToString();
+        NumberOfPossess.text = ThisCellData.ItemInfo.NumberOfNowPossess.ToString() + "/" + ThisCellData.ItemInfo.NumberOfMax.ToString();
 
-    }
-
-    public void GetCellInfo(UsableItemInformaiton ItemInfo, int CellIndex)
-    {
-        this.ItemInfo = ItemInfo;
-        this.CellIndex = CellIndex;
+        if (ThisCellData.IsSelected)
+            ThisCellImage.color = SelectedButtonColor;
+        else if (ThisCellImage.color == SelectedButtonColor && ThisCellData.IsSelected == false)
+            ThisCellImage.color = UnselectedButtonColor;
     }
 
     /// <summary>
-    /// 셀 정보 세팅
+    /// 아이템 셀 클릭
     /// </summary>
-    private void SetCellInfo()
+    public void Clicked()
     {
-        ItemName.text = ItemInfo.Name.ToString();
-        NumberOfPossess.text = ItemInfo.NumberOfNowPossess + "/" + ItemInfo.NumberOfMax.ToString();
+        OnSelect(); //액션 호출
     }
-
-    
 }

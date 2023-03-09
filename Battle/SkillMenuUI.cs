@@ -75,13 +75,11 @@ public class SkillMenuUI : MonoBehaviour
             NowSelectedButton = Tmp;
             Tmp.image.color = SelectedSkillButtonColor;
             NowSelectedSkillIndex = int.Parse(Regex.Replace(Tmp.name, @"[^0-9]", ""));
-            Debug.Log(NowSelectedSkillIndex);
         }
     }
 
     private void CompareWhichSkillButtonClicked(Button Tmp)
     {
         string TmpButtonName = Tmp.name;
-        Debug.Log(TmpButtonName);
     }
 }

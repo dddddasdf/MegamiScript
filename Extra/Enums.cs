@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Gpm.Ui;
 
 public enum SceneIndex
 {
@@ -61,6 +60,17 @@ public struct Status
 }
 
 
+//내성 무효 반사 흡수 메모
+[System.Serializable]
+enum SkillAffinities
+{
+    Weak,   //약점
+    Resist, //내성 耐
+    Null,   //무효 無
+    Reflect,    //반사 反
+    Drain   //흡수 吸
+}
+
 
 //스킬 관련 단락
 #region Skill
@@ -103,20 +113,6 @@ public struct AttackAddtional
 
 }
 
-#endregion
-
-#region Item
-
-/// <summary>
-/// 소모템 구조체
-/// </summary>
-[System.Serializable]
-public class UsableItemInformaiton : InfiniteScrollData
-{
-    public string Name = string.Empty;
-    public int NumberOfNowPossess = 0;
-    public int NumberOfMax = 0;
-}
 #endregion
 
 #region Help
