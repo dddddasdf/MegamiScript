@@ -8,7 +8,7 @@ public class TestScript : MonoBehaviour
 {
     public static TestScript Instance { get; private set; }
 
-    SkillDataBase SkillDBCaching;
+    public SkillDataBase SkillDBCaching;
 
     private void Awake()
     {
@@ -22,4 +22,6 @@ public class TestScript : MonoBehaviour
         }
         Destroy(gameObject);
     }
+
+    
 }

@@ -103,5 +103,7 @@ public class EnemyCell : MonoBehaviour
             i = (i + 1) % 2;
             EnemyAffinitiesMark.sprite = SwapMark[i];
         }
+
+        TestScript.Instance.SkillDBCaching.TestScript();
     }
 }

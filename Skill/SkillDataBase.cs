@@ -45,6 +45,19 @@ public enum TargetNumber
     All         //전체
 }
 
+/// <summary>
+/// 공격 스킬의 부가 효과
+/// </summary>
+public enum AddtionalEffect
+{
+    None,           //효과 없음
+    Critical,       //크리티컬 확률 증가
+    DrainHP,        //HP 흡수
+    DrainMP,        //MP 흡수
+    DrainHPMP,      //HP, MP 흡수
+    
+}
+
 
 /// <summary>
 /// 공격, 회복, 버프가 공통적으로 가지는 부분
@@ -58,20 +71,35 @@ public class Skill
     public int MinHits;         //최소 횟수
     public int MaxHits;         //최다 횟수
     public int Rank;            //스킬 랭크
+    public int Accuracy;        //명중률
     public string Description;  //스킬 설명
 }
 
+/// <summary>
+/// 공격 스킬 클래스
+/// </summary>
+[SerializeField]
 public class AttackSkillClass : Skill
 {
     public AttackSkillType thisSkillType;
     public int Power;     //위력
+    public AddtionalEffect AddEffect;       //부가 효과
+    public int? Value;                      //부가 효과가 존재할 경우 관련 수치-부가 효과가 없을 경우 null
 }
 
+/// <summary>
+/// 회복 스킬 클래스
+/// </summary>
+[SerializeField]
 public class RecoverSkillClass : Skill
 {
     public int Power;     //위력
 }
 
+/// <summary>
+/// 보조 스킬 클래스
+/// </summary>
+[SerializeField]
 public class SupportSkillClass : Skill
 {
     public string Target;       //스킬 대상이 아군인지 적인지
@@ -94,6 +122,21 @@ public class SkillDataBase
     private void LoadAttackSkillDatabase()
     {
         AsyncOperationHandle<TextAsset> TextAssetHandle;
-        
+        TextAssetHandle = Addressables.LoadAssetAsync<TextAsset>("AttackSkillData");
+
+        TextAssetHandle.Completed += Handle =>
+        {
+            if (TextAssetHandle.Status == AsyncOperationStatus.Failed)
+            {
+                
+            }
+
+            AttackSkillList = JsonConvert.DeserializeObject<List<AttackSkillClass>>(TextAssetHandle.Result.text);
+        };
+    }
+
+    public void TestScript()
+    {
+        Debug.Log(AttackSkillList[0].Name);
     }
 }
