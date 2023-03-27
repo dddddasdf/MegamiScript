@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     private Coroutine EnemyCoroutine;
     private PlayerData PlayerDataScript;    //플레이어 정보를 갖고 있는 스크립트
 
-    public SkillDataBase SkillDBCaching;    //스킬 DB 스크립트
+    public SkillDatabaseManager SkillDBCaching;    //스킬 DB 스크립트
 
     #endregion
 

@@ -8,7 +8,7 @@ public class TestScript : MonoBehaviour
 {
     public static TestScript Instance { get; private set; }
 
-    public SkillDataBase SkillDBCaching;
+    public SkillDatabaseManager SkillDBCaching;
 
     private void Awake()
     {
@@ -16,7 +16,7 @@ public class TestScript : MonoBehaviour
         {
             Instance = this;
 
-            SkillDBCaching = new SkillDataBase();
+            SkillDBCaching = new SkillDatabaseManager();
 
             return;
         }
