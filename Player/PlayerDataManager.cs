@@ -23,6 +23,11 @@ public struct PartyMember
 
 public class PlayerData
 {
+    public int PlayTime;        //총 플레이 한 시간
+}
+
+public class PlayerDataManager
+{
     private PartyMember PlayerStruct;   //파티에 플레이어 캐릭터는 첫번째 멤버로 고정
     private PartyMember[] PartyMemberArray; //파티 멤버 배열
 

@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject EnemySpawner; //적 생성 담당 스크립트
     private EnemyRespawnManager DemonSpawnManager;
     private Coroutine EnemyCoroutine;
-    private PlayerData PlayerDataScript;    //플레이어 정보를 갖고 있는 스크립트
+    private PlayerDataManager PlayerDataScript;    //플레이어 정보를 갖고 있는 스크립트
 
     public SkillDatabaseManager SkillDBCaching;    //스킬 DB 스크립트
 
@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour
     {
         EnemyData.InitEnemyData();   //몬스터 데이터 초기화
         HelpTextData.InitHelpTextData();    //도움말 텍스트 데이터 초기화
-        PlayerDataScript = new PlayerData();
+        PlayerDataScript = new PlayerDataManager();
         PlayerDataScript.SetPlayerTmp();
     }
 

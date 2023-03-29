@@ -60,16 +60,7 @@ public struct Status
 }
 
 
-//내성 무효 반사 흡수 메모
-[System.Serializable]
-enum SkillAffinities
-{
-    Weak,   //약점
-    Resist, //내성 耐
-    Null,   //무효 無
-    Reflect,    //반사 反
-    Drain   //흡수 吸
-}
+
 
 
 //스킬 관련 단락
