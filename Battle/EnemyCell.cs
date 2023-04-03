@@ -11,6 +11,12 @@ public class EnemyCellData
 {
     public string Name { get; private set; }
 
+    private int St;          //힘-칼 기본 공격 위력 상승, 물리 스킬 위력 소폭 상승
+    private int Dx;          //기-총 기본 공격 위력 상승, 물리 스킬 위력 대폭 상승
+    private int Ma;          //마-마법 스킬 위력 상승
+    private int Ag;          //속-선제턴 확률, 행동순서, 명중률, 회피율 상승
+    private int Lu;          //운-크리티컬, 회피율, 상태이상 성공률, 상태이상 회복속도, 아이템 드랍률 상승
+
 
     public void SetName(string Name)
     {

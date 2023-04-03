@@ -17,7 +17,6 @@ namespace System.Runtime.CompilerServices
 
 public enum SkillTypeSort
 {
-    //Attack,     //공격
     Physical,       //물리
     Gun,            //총
     Fire,           //아기-화염
@@ -65,6 +64,7 @@ public enum EffectType
     DrainMP,        //MP 흡수
     DrainHPMP,      //HP, MP 흡수
     Drain,
+    InstantKill,    //즉사
     //여기까지 공격 계열
 
     Buff,           //버프기
@@ -104,8 +104,6 @@ public enum TargetStats
 #endregion
 
 
-
-
 [System.Serializable]
 public record SkillDataRec
 {
@@ -130,6 +128,42 @@ public record SkillDataRec
     -상태이상 스킬의 경우: 해당 상태이상이 부여될 확률
     */
     private TargetStats? EffectStats { get; init; }        //추가 효과(흡수, 회복, 버프, 디버프기)에서 대상이 되는 스탯
+
+    /// <summary>
+    /// 위력 값 반환
+    /// </summary>
+    /// <returns>스킬의 위력</returns>
+    public int? ReturnPower()
+    {
+        return Power;
+    }
+
+    /// <summary>
+    /// 최소 히트 수 반환
+    /// </summary>
+    /// <returns></returns>
+    public int ReturnMinHit()
+    {
+        return MinHits;
+    }
+
+    /// <summary>
+    /// 최대 히트 수 반환
+    /// </summary>
+    /// <returns></returns>
+    public int ReturnMaxHit()
+    {
+        return MaxHits;
+    }
+
+    /// <summary>
+    /// 스킬 타입 반환
+    /// </summary>
+    /// <returns></returns>
+    public SkillTypeSort ReturnSkillType()
+    {
+        return SkillType;
+    }
 }
 
 

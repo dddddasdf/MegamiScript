@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 프레스 턴 시스템
+/// </summary>
 public enum PressTurn
 {
     ReduceAllTurn,      //남아있는 모든 턴 소모
@@ -77,6 +80,8 @@ public class BattleManager : MonoBehaviour
     private int NumberOfWholeTurn;          //온전한 한 턴 수
     private int NumberOfHalfTurn;           //절반 턴 수
 
+    private bool IsPlayerTurn;              //플레이어 턴 확인용: true == 플레이어 턴/false == 적 턴
+
 
     #endregion
 
@@ -143,6 +148,24 @@ public class BattleManager : MonoBehaviour
     private void SetPlayerTurn()
     {
         TurnUIScript.PlacePlayerTurn(PartyMemberNumber);
+    }
+
+    /// <summary>
+    /// 페이즈 전환시 행동턴수를 알맞게 채워주는 함수
+    /// </summary>
+    private void FillNumberOfTurn()
+    {
+        if (IsPlayerTurn)
+        {
+            //플레이어의 파티에서 현재 생존 중인 멤버수만큼 온전한 한 턴 수를 채워준다
+            //그 숫자만큼 배틀 UI 관리자에게 턴 아이콘을 채우라고 전달한다
+        }
+        else
+        {
+            //적의 파티에서 현재 생존 중인 멤버수만큼 온전한 한 턴 수를 채워준다
+            //그 숫자만큼 배틀 UI 관리자에게 턴 아이콘을 채우라고 전달한다
+        }
+
     }
 
     
