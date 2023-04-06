@@ -12,13 +12,14 @@ public enum PressTurn
     1. 상대방에게 반사 또는 흡수인 속성으로 공격했을 경우
     2. 도주를 실패했을 경우
     3. 대화에서 상대방을 화나게 했을 경우
+
     남아있는 턴을 모두 소모하고 즉시 상대 페이즈로 교체
     */
 
     ReduceTwoTurn,      //2턴 소모
     /*
     1. 상대방에게 무효인 속성으로 공격했을 경우
-    2. 상대방이 공격을 회피했을 경우
+    2. 상대방이 공격을 회피했을 경우 (하마, 주살의 즉사가 실패한 미스는 제외)
     3. 적과 협상에 실패하고 적이 그냥 떠났을 경우
     
     다음과 같은 우선순위를 거쳐 2턴을 소모
@@ -37,7 +38,7 @@ public enum PressTurn
     2. 절반 턴이 존재하지 않을 경우, 1개의 온전한 한 턴을 소모
     */
 
-    ReduceHalfTurn_Party,   //절반 턴 소모(아군 턴 전용)
+    ReduceHalfTurn_Party,   //절반 턴 소모(플레이어 페이즈 전용)
     /*
     1. 다음 아군에게 차례를 넘겼을 경우
     2. 아군 소환, 복귀 또는 교체를 했을 경우
@@ -68,6 +69,7 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private BattleUI BattleUIScript;
     [SerializeField] private PartyUI PartyUIScript;
     [SerializeField] private TurnUI TurnUIScript;
+    [SerializeField] private BattleSkillMenuUI SkillUIScript;
 
     private PartyMember[] PartyMemberArray; //파티 정보를 받아올 배열
     private int PartyMemberNumber = 0;  //현재 전투에서 활동 가능한 아군 인원 수
@@ -80,7 +82,8 @@ public class BattleManager : MonoBehaviour
     private int NumberOfWholeTurn;          //온전한 한 턴 수
     private int NumberOfHalfTurn;           //절반 턴 수
 
-    private bool IsPlayerTurn;              //플레이어 턴 확인용: true == 플레이어 턴/false == 적 턴
+    private bool IsPlayerPhase;              //플레이어 페이즈 확인용: true == 플레이어 페이즈/false == 적 페이즈
+    private OnBattleObject NowTurnCharacterOfParty;   //플레이어 페이즈 중 현재 행동 중인 아군
 
 
     #endregion
@@ -142,6 +145,30 @@ public class BattleManager : MonoBehaviour
     }
     #endregion
 
+    #region Skill
+
+    /// <summary>
+    /// 행동턴 교체시 현재 행동턴인 캐릭터의 스킬 데이터 전달
+    /// </summary>
+    public void CallSetSkillList()
+    {
+        SkillUIScript.SetSkillList(NowTurnCharacterOfParty);
+    }
+
+
+    /// <summary>
+    /// 스킬 선택창에서 스킬을 골랐을 때 어떤 스킬인지 확인하고 어떤 UI를 뿌려줄지 결정하는 곳
+    /// </summary>
+    public void CheckSelectedSkill()
+    {
+        
+    }
+
+
+
+    #endregion
+
+
     #region CheckTurns
 
     //임시용
@@ -155,7 +182,7 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     private void FillNumberOfTurn()
     {
-        if (IsPlayerTurn)
+        if (IsPlayerPhase)
         {
             //플레이어의 파티에서 현재 생존 중인 멤버수만큼 온전한 한 턴 수를 채워준다
             //그 숫자만큼 배틀 UI 관리자에게 턴 아이콘을 채우라고 전달한다
@@ -228,6 +255,9 @@ public class BattleManager : MonoBehaviour
                 }
                 break;
         }
+
+        if (NumberOfWholeTurn == 0 && NumberOfHalfTurn == 0)
+            IsPlayerPhase = !IsPlayerPhase;   //사용 가능 행동턴 수가 0이 되었을 경우 상대방 페이즈로 넘어간다
     }
 
     #endregion

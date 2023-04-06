@@ -65,11 +65,13 @@ public class ItemMenuUI : MonoBehaviour
 
         for (int i = 0; i < 25; i++)
         {
+            //임시용 하드코딩
             UsableItemInformaiton NewItemInfo = new UsableItemInformaiton();
             NewItemInfo.Name = "보옥" + Count.ToString();
             NewItemInfo.NumberOfNowPossess = Count;
             NewItemInfo.NumberOfMax = Count + 10;
             Count++;
+            //임시용 하드코딩 종료
 
             ItemCellData NewItemCellData = new ItemCellData();
             NewItemCellData.ItemInfo = NewItemInfo;

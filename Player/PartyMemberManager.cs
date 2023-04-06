@@ -352,6 +352,21 @@ public class PartyMemberData
         return BeginningLevel;
     }
 
+    /// <summary>
+    /// 습득한 스킬 개수 반환
+    /// </summary>
+    /// <returns>습득한 스킬 개수</returns>
+    public int ReturnNumberOfSkill()
+    {
+        return LearnedSkillList.Count;
+    }
+
+    public SkillDataRec ReturnSkillByIndex(int Index)
+    {
+        return LearnedSkillList[Index];
+    }
+
+
     #endregion
 }
 

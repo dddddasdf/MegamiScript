@@ -19,7 +19,7 @@ public class BattleMenuUI : MonoBehaviour
     [SerializeField] private Button PassMenuButton;
     private int NowSelectedActIndex;    //현재 선택 중인 행동 버튼 인덱스: 키보드 입력용 및 저장용
 
-    [SerializeField] private SkillMenuUI SkillMenuManager;
+    [SerializeField] private BattleSkillMenuUI SkillMenuManager;
     [SerializeField] private ItemMenuUI ItemMenuManager;
 
     private Button NowSelectedButton;   //활성화 상태 버튼 저장용

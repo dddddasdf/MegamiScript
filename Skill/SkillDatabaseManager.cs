@@ -130,6 +130,24 @@ public record SkillDataRec
     private TargetStats? EffectStats { get; init; }        //추가 효과(흡수, 회복, 버프, 디버프기)에서 대상이 되는 스탯
 
     /// <summary>
+    /// 스킬명 반환
+    /// </summary>
+    /// <returns></returns>
+    public string ReturnName()
+    {
+        return Name;
+    }
+
+    /// <summary>
+    /// 소모 마나 반환
+    /// </summary>
+    /// <returns></returns>
+    public int ReturnUseMP()
+    {
+        return UseMP;
+    }
+
+    /// <summary>
     /// 위력 값 반환
     /// </summary>
     /// <returns>스킬의 위력</returns>
