@@ -18,6 +18,8 @@ public class BattleUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI TestText;
     [SerializeField] private TextMeshProUGUI TestPlayerText;
 
+
+
     #endregion
 
     private void OnEnable()

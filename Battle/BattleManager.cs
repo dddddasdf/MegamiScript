@@ -85,6 +85,14 @@ public class BattleManager : MonoBehaviour
     private bool IsPlayerPhase;              //플레이어 페이즈 확인용: true == 플레이어 페이즈/false == 적 페이즈
     private OnBattleObject NowTurnCharacterOfParty;   //플레이어 페이즈 중 현재 행동 중인 아군
 
+    private List<OnBattleObject> TurnOrderList = new List<OnBattleObject>();     //행동턴 배정용 리스트
+    /*
+    아군 행동순서 배정: 엔트리의 상단(좌측)에 있을수록 먼저 행동한다 (진여5의 시스템과 동일)
+    
+    적 행동순서 배정: 적의 속도에 따라 순서 배정(속도가 같을 경우 랜덤) 
+    */
+
+
 
     #endregion
 
@@ -167,6 +175,23 @@ public class BattleManager : MonoBehaviour
 
 
     #endregion
+
+
+    /// <summary>
+    /// 동료 악마가 사망할 경우 엔트리에서 제거되고 스톡으로 돌아간다
+    /// </summary>
+    public void RemoveInEntry()
+    {
+
+    }
+
+    /// <summary>
+    /// 스톡에 있는 악마와 엔트리에 있는 동료 악마 교체
+    /// </summary>
+    public void ChangeEntry()
+    {
+
+    }
 
 
     #region CheckTurns
