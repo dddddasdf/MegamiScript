@@ -93,12 +93,12 @@ public class BattleSkillMenuUI : MonoBehaviour
             VerticalISkillList.Clear();     //마찬가지로 비워준다
 
         
-        int NumberOfSkill = NowTurnCharacter.ReturnNumberOfSkill();
+        int NumberOfSkill = NowTurnCharacter.ReturnMemberData().ReturnNumberOfSkill();
 
         for (int i = 0; i < NumberOfSkill; i++)
         {
             SkillCellData NewSkillCellData = new SkillCellData();
-            NewSkillCellData.SetSkillInfo(NowTurnCharacter.ReturnSkillByIndex(i));      //현재 행동턴인 캐릭터에게서 스킬 데이터를 반환 받아 저장
+            NewSkillCellData.SetSkillInfo(NowTurnCharacter.ReturnMemberData().ReturnSkillByIndex(i));      //현재 행동턴인 캐릭터에게서 스킬 데이터를 반환 받아 저장
 
             if (i == 0)
             {

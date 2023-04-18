@@ -6,22 +6,35 @@ using UnityEngine;
 
 public class TestScript : MonoBehaviour
 {
-    public static TestScript Instance { get; private set; }
+    public static TestScript Instance;
 
-    public SkillDatabaseManager SkillDBCaching;
+    [SerializeField] private SkillDatabaseManager SkillDBCaching = new SkillDatabaseManager();
 
     private void Awake()
     {
-        if (Instance == null)
+        if (null == Instance)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
+            SkillDBCaching.InitSkillDatabaseManager();
 
-            SkillDBCaching = new SkillDatabaseManager();
 
             return;
         }
         Destroy(gameObject);
+
     }
 
-    
+    public void TestFN()
+    {
+        Debug.Log("°úÄ«¸ô¸®");
+
+        SkillDBCaching.tkffuwnj();
+    }
+
+
+    public SkillDatabaseManager ReturnClass()
+    {
+        return SkillDBCaching;
+    }
 }

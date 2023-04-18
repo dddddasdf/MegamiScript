@@ -11,7 +11,6 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 public class BattleUI : MonoBehaviour
 {
     #region SetVariables
-    [SerializeField] private GameObject BattleManagerObject;
     private BattleManager BattleManagerScript;
 
     [SerializeField] private Button Test;
@@ -29,7 +28,7 @@ public class BattleUI : MonoBehaviour
 
     public void TestFn()
     {
-        GameManager.Instance.EndBattle();
+        //GameManager.Instance.EndBattle();
     }
 
     /// <summary>

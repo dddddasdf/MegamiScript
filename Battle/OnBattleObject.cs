@@ -5,8 +5,32 @@ using UnityEngine;
 /// <summary>
 /// 전투에 참전 중인 객체
 /// </summary>
-public class OnBattleObject : PartyMemberData
-{  
+public class OnBattleObject
+{
+    private PartyMemberData thisMemberData;     //얕은 복사로 받아오는 원본 멤버 데이터
+    private bool IsPlayerCharacter;
+
+    public void SetMemberData(PartyMemberData MemberData)
+    {
+        thisMemberData = MemberData;
+    }
+
+    public PartyMemberData ReturnMemberData()
+    {
+        return thisMemberData;
+    }
+
+    public bool ReturnIsPlayerCharacter()
+    {
+        return IsPlayerCharacter;
+    }
+
+    public void SetIsPlayerCharacter(bool Value)
+    {
+        IsPlayerCharacter = Value;
+    }
+
+
     #region ManagingBuffDebuff
     /*
     능력치 강화 버프/디버프는 3회 중첩 가능
@@ -22,6 +46,24 @@ public class OnBattleObject : PartyMemberData
 
     private bool IsPhysicEnhanced = false;   //차지 사용 스위치용, 버프를 걸어 적용되면 true로 변경하고 다음 턴 종료시 false로 변환한다
     private bool IsMagicEnhanced = false;   //컨센트레이트 사용 스위치용, 버프를 걸어 적용되면 true로 변경하고 다음 턴 종료시 false로 변환한다
+
+
+    /// <summary>
+    /// 버프 관련 변수 초기화
+    /// </summary>
+    public void InitBuffField()
+    {
+        NumberOfAttackBuff = 0;
+        NumberOfDefenseBuff = 0;
+        NumberOfAgilityBuff = 0;
+
+        NumberOfAttackDebuff = 0;
+        NumberOfDefenseDebuff = 0;
+        NumberOfAgilityDebuff = 0;
+
+        IsPhysicEnhanced = true;
+        IsMagicEnhanced = true;
+    }
 
 
 
@@ -196,10 +238,4 @@ public class OnBattleObject : PartyMemberData
     }
 
     #endregion
-}
-
-
-public class OnBattleParty
-{
- 
 }

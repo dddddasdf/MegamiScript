@@ -8,7 +8,7 @@ public class PartyUI : MonoBehaviour
 
     [SerializeField] private GameObject FirstMember;    //첫번째 파티 멤버의 게임 오브젝트
 
-    [SerializeField] private BattlePartyMember[] MemberScriptArray; //멤버 스크립트 배열
+    [SerializeField] private BattleMemberCell[] MemberScriptArray; //멤버 스크립트 배열
 
 
     #endregion
@@ -18,43 +18,48 @@ public class PartyUI : MonoBehaviour
     //    FirstMemberScript = FirstMember.GetComponent<BattlePartyMember>();
     //}
 
+#nullable enable
     /// <summary>
-    /// 해당 프레임에 공석 표시
+    /// 전투 돌입 후 파티 리스트가 세팅 되고 UI에 정보 보내주기
+    /// </summary>
+    /// <param name="NowOnBattleObject"></param>
+    public void InitPartyDisplay(List<OnBattleObject?> NowOnBattleObject)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            MemberScriptArray[i].SetMemberCell(NowOnBattleObject[i]);
+        }
+    }
+#nullable disable
+
+    /// <summary>
+    /// 파티원 변동시 해당 슬롯 정보 갱신
     /// </summary>
     /// <param name="MemberNumber"></param>
-    public void SetEmptyMember(int MemberNumber)
+    public void CallSwapMember(int MemberNumber, OnBattleObject? TargetBattleObject)
     {
-        MemberScriptArray[MemberNumber].SetEmptyText();
+        MemberScriptArray[MemberNumber].SwapMemberData(TargetBattleObject);
     }
 
-    /// <summary>
-    /// 해당 멤버 UI의 이름, 최대 체력, 마나 설정
-    /// </summary>
-    /// <param name="MemberNumber"> 몇번째 멤버 </param>
-    public void SetUIText(int MemberNumber, string Name, int MaxHp, int MaxMP)
-    {
-        MemberScriptArray[MemberNumber].GetName(Name);
-        MemberScriptArray[MemberNumber].GetMaxHPMP(MaxHp, MaxMP);
-    }
 
     /// <summary>
-    /// 현재 체력 전달
+    /// 현재 체력 갱신
     /// </summary>
     /// <param name="MemberNumber"></param>
     /// <param name="RemainHP"></param>
-    public void SetHPValue(int MemberNumber, int RemainHP)
+    public void CallRefreshHPValue(int MemberNumber)
     {
-        MemberScriptArray[MemberNumber].GetHPValue(RemainHP);
+        MemberScriptArray[MemberNumber].RefreshHP();
     }
 
     /// <summary>
-    /// 현재 마나 전달
+    /// 현재 마나 갱신
     /// </summary>
     /// <param name="MemberNumber"></param>
     /// <param name="RemainMP"></param>
-    public void SetMPValue(int MemberNumber, int RemainMP)
+    public void CallRefreshMPValue(int MemberNumber)
     {
-        MemberScriptArray[MemberNumber].GetMPValue(RemainMP);
+        MemberScriptArray[MemberNumber].RefreshMP();
     }
 
     /// <summary>

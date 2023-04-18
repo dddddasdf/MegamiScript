@@ -1,5 +1,5 @@
-using System.Collections;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -76,6 +76,7 @@ public enum EffectType
     RecoverAil2,
     RecoverAllAil, 
     RecoverAllHPAil,
+    RecoverHP,
     Recover,
     //여기까지 회복 계열
 
@@ -107,6 +108,42 @@ public enum TargetStats
 [System.Serializable]
 public record SkillDataRec
 {
+    /// <summary>
+    /// Init으로 인해 생성자를 명시해줘야 역직렬화가 가능하다
+    /// </summary>
+    /// <param name="skillType"></param>
+    /// <param name="iD"></param>
+    /// <param name="rank"></param>
+    /// <param name="name"></param>
+    /// <param name="useMP"></param>
+    /// <param name="target"></param>
+    /// <param name="targetNuber"></param>
+    /// <param name="minHits"></param>
+    /// <param name="maxHits"></param>
+    /// <param name="power"></param>
+    /// <param name="accuracy"></param>
+    /// <param name="description"></param>
+    /// <param name="addEffect"></param>
+    /// <param name="effectValue"></param>
+    public SkillDataRec(SkillTypeSort skillType, int iD, int rank, string name, int useMP, WhichTarget target, NumberOfTarget? targetNuber, int minHits, int maxHits, int? power,
+        int accuracy, string description, EffectType? addEffect, int? effectValue)
+    {
+        SkillType = skillType;
+        ID = iD;
+        Rank = rank;
+        Name = name;
+        UseMP = useMP;
+        Target = target;
+        thisTargetNumber = targetNuber;
+        MinHits = minHits;
+        MaxHits = maxHits;
+        Power = power;
+        Accuracy = accuracy;
+        Description = description;
+        AddEffect = addEffect;
+        EffectValue = effectValue;
+    }
+
     private SkillTypeSort SkillType { get; init; } //스킬 유형
     private int ID { get; init; }              //식별 ID
     private int Rank { get; init; }            //스킬 랭크
@@ -136,6 +173,15 @@ public record SkillDataRec
     public string ReturnName()
     {
         return Name;
+    }
+
+    /// <summary>
+    /// ID값 반환
+    /// </summary>
+    /// <returns></returns>
+    public int ReturnID()
+    {
+        return ID;
     }
 
     /// <summary>
@@ -193,9 +239,12 @@ public class SkillDatabaseManager
     //private List<SkillDataClass> SkillList = new List<SkillDataClass>();
 
     private List<SkillDataRec> SkillRecList = new List<SkillDataRec>();
+    private Queue<Action> AfterInitJobQueue = new Queue<Action>();      //초기화 작업 후 순차적으로 진행시킬 작업 목록
 
-
-    public SkillDatabaseManager()
+    /// <summary>
+    /// 임시용
+    /// </summary>
+    public void InitSkillDatabaseManager()
     {
         //LoadAttackSkillDatabase();
         //LoadSkillDatabasse();
@@ -216,7 +265,39 @@ public class SkillDatabaseManager
             }
 
             SkillRecList = JsonConvert.DeserializeObject<List<SkillDataRec>>(TextAssetHandle.Result.text);
+            Debug.Log("호출2");
+
+            while (AfterInitJobQueue.Count > 0)
+            {
+                Action action = AfterInitJobQueue.Dequeue();
+                action?.Invoke();
+            }
+
+            AfterInitJobQueue = null;       //작업큐 비워주기
         };
+    }
+
+    /// <summary>
+    /// 임시용
+    /// </summary>
+    public void tkffuwnj()
+    {
+        Debug.Log(SkillRecList[1].ReturnName());
+    }
+
+    public void AddJobQueueMethod(Action Method)
+    {
+        AfterInitJobQueue.Enqueue(Method);
+    }
+
+    /// <summary>
+    /// ID값이 일치하는 스킬 반환
+    /// </summary>
+    /// <param name="SkilliD"></param>
+    /// <returns></returns>
+    public SkillDataRec ReturnSkillData(int SkilliD)
+    {
+        return SkillRecList.Find(x => (x.ReturnID()) == SkilliD);
     }
 
 

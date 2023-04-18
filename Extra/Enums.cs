@@ -60,51 +60,25 @@ public struct Status
 }
 
 
-
-
-
-//스킬 관련 단락
-#region Skill
-
 /// <summary>
-/// 공격 스킬 유형 목록
+/// 옵저버 패턴-발행자 인터페이스
 /// </summary>
-public enum AttackType
+public interface ISubject
 {
-    Physical,   //물리
-    Gun,    //총
-    Fire,   //화염
-    Ice,    //빙결
-    Electric,   //전격
-    Force,  //충격
-    Light,  //파마
-    Dark,   //주살
-    Almighty    //만능
+    void AddObserver(IObserver NewObserver);
+    void RemoveObserver(IObserver Observer);
+    void NotifyObserver();
 }
 
 /// <summary>
-/// 전투 치를 때 스킬에 대한 설명
+/// 옵저버 패턴-구독자 인터페이스
 /// </summary>
-[System.Serializable] 
-public struct AttackSkill
+public interface IObserver
 {
-    public AttackType TypeName; //공격 스킬 유형
-    public string Name; //스킬명
-    public int Power;   //위력
-    public int Accuracy;    //명중률
-    public int UseMP;   //소모 마나양
-
-    public bool IsAdditionalEffect;    //부가효과 유무
-
+    void Update(ISubject Subject);
 }
 
-public struct AttackAddtional
-{
 
-
-}
-
-#endregion
 
 #region Help
 /// <summary>

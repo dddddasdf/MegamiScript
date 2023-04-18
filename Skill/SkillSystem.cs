@@ -32,12 +32,12 @@ public class SkillSystem
         if (IsSwordAttack)
         {
             //통상 공격
-            RoughDamage = (WeaponPower + User.ReturnDx()) * 0.33f + RandomNumber;
+            RoughDamage = (WeaponPower + User.ReturnMemberData().ReturnDx()) * 0.33f + RandomNumber;
         }
         else
         {
             //총 통상 공격
-            RoughDamage = (WeaponPower + User.ReturnSt()) * 0.33f + RandomNumber;
+            RoughDamage = (WeaponPower + User.ReturnMemberData().ReturnSt()) * 0.33f + RandomNumber;
         }
 
         NormalAttackDamage = (int)RoughDamage;
@@ -57,41 +57,41 @@ public class SkillSystem
          */
         float WeaponPower = 1f;          //주인공의 경우에만 무기 위력을 받아오고, 동료 악마는 별도 계산식을 거친다
 
-        int MinHit = User.ReturnNormalMinHit();
-        int MaxHit = User.ReturnNormalMaxHit();
+        int MinHit = User.ReturnMemberData().ReturnNormalMinHit();
+        int MaxHit = User.ReturnMemberData().ReturnNormalMaxHit();
         float AverageHit = (MinHit + MaxHit) * 0.5f;
 
         switch (AverageHit)
         {
             case 1f:
-                WeaponPower = 4.3f *User.ReturnBeginningLv() + 49.6f;
+                WeaponPower = 4.3f *User.ReturnMemberData().ReturnBeginningLv() + 49.6f;
                 break;
             case 1.5f:
                 //통상공격이 1~2회
-                WeaponPower = 3f * User.ReturnBeginningLv() + 35f;
+                WeaponPower = 3f * User.ReturnMemberData().ReturnBeginningLv() + 35f;
                 break;
             case 2f:
                 //통상 공격이 2회 or 1~3회
-                WeaponPower = 2.2f * User.ReturnBeginningLv() + 26.8f;
+                WeaponPower = 2.2f * User.ReturnMemberData().ReturnBeginningLv() + 26.8f;
                 break;
             case 2.5f:
                 //통상 공격이 2~3회
-                WeaponPower = 1.5f * User.ReturnBeginningLv() + 42.5f;
+                WeaponPower = 1.5f * User.ReturnMemberData().ReturnBeginningLv() + 42.5f;
                 break;
         }
 
         float RoughDamage;
         int RandomNumber = Random.Range(0, 16);     //난수 0~15
         
-        if (User.ReturnIsNormalGun())
+        if (User.ReturnMemberData().ReturnIsNormalGun())
         {
             //기본 공격이 총인 특수한 악마들은 기 스탯으로 계산한다
-            RoughDamage = (WeaponPower + User.ReturnDx()) * 0.33f + RandomNumber;
+            RoughDamage = (WeaponPower + User.ReturnMemberData().ReturnDx()) * 0.33f + RandomNumber;
         }
         else
         {
             //그 외는 일반적으로 힘 스탯을 이용한다
-            RoughDamage = (WeaponPower + User.ReturnSt()) * 0.33f + RandomNumber;
+            RoughDamage = (WeaponPower + User.ReturnMemberData().ReturnSt()) * 0.33f + RandomNumber;
         }
 
         NormalAttackDamage = (int)RoughDamage;
@@ -111,17 +111,17 @@ public class SkillSystem
         마법과 다르게 공식적으로 밝혀진 계산식은 없어서 유저 추정 계산식 사용
         */
         int SkillPower = (int)UsedSkill.ReturnPower();
-        int StOfUser = User.ReturnSt();     //스킬을 사용한 캐릭터의 힘 스탯 받아오기
-        int DxOfUser = User.ReturnDx();     //스킬을 사용한 캐릭터의 기 스탯 받아오기
+        int StOfUser = User.ReturnMemberData().ReturnSt();     //스킬을 사용한 캐릭터의 힘 스탯 받아오기
+        int DxOfUser = User.ReturnMemberData().ReturnDx();     //스킬을 사용한 캐릭터의 기 스탯 받아오기
         float RoughDamage;          //초벌 계산값 (최종 대미지는 소수점 이하를 잘라낸다)
 
         float AffinityRevision;     //약점 보정값
-        if (Target.ReturnMatchingAffinity(UsedSkill.ReturnSkillType()) == SkillAffinities.Weak)
+        if (Target.ReturnMemberData().ReturnMatchingAffinity(UsedSkill.ReturnSkillType()) == SkillAffinities.Weak)
         {
             //약점시 1.5배
             AffinityRevision = 1.5f;
         }
-        else if (Target.ReturnMatchingAffinity(UsedSkill.ReturnSkillType()) == SkillAffinities.Resist)
+        else if (Target.ReturnMemberData().ReturnMatchingAffinity(UsedSkill.ReturnSkillType()) == SkillAffinities.Resist)
         {
             //내성시 0.5배
             AffinityRevision = 0.5f;
@@ -152,7 +152,7 @@ public class SkillSystem
         if (User.ReturnIsPhysicEnhanced())
             TotalSupportCoeffceint += IncreaseValueOfEnhance;      //컨센트레이트가 적용된 상태면 대미지 합으로 추가 증가
 
-        if (User.ReturnIsSick())
+        if (User.ReturnMemberData().ReturnIsSick())
             TotalSupportCoeffceint *= DebuffAttackValueOfSick;  //감기에 걸린 상태면 모든 계수 보정 후 최종적으로 25% 차감
         #endregion
 
@@ -176,16 +176,16 @@ public class SkillSystem
 
         */
         int SkillPower = (int)UsedSkill.ReturnPower();
-        int MaOfUser = User.ReturnMa();     //스킬을 사용한 캐릭터의 마 스탯 받아오기
+        int MaOfUser = User.ReturnMemberData().ReturnMa();     //스킬을 사용한 캐릭터의 마 스탯 받아오기
         float RoughDamage;          //초벌 계산값 (최종 대미지는 소수점 이하를 잘라낸다)
 
         float AffinityRevision;     //약점 보정값
-        if (Target.ReturnMatchingAffinity(UsedSkill.ReturnSkillType()) == SkillAffinities.Weak)
+        if (Target.ReturnMemberData().ReturnMatchingAffinity(UsedSkill.ReturnSkillType()) == SkillAffinities.Weak)
         {
             //약점시 1.5배
             AffinityRevision = 1.5f;
         }
-        else if (Target.ReturnMatchingAffinity(UsedSkill.ReturnSkillType()) == SkillAffinities.Resist)
+        else if (Target.ReturnMemberData().ReturnMatchingAffinity(UsedSkill.ReturnSkillType()) == SkillAffinities.Resist)
         {
             //내성시 0.5배
             AffinityRevision = 0.5f;
@@ -216,7 +216,7 @@ public class SkillSystem
         if (User.ReturnIsMagicEnhanced())
             TotalSupportCoeffceint += IncreaseValueOfEnhance;      //컨센트레이트가 적용된 상태면 대미지 합으로 추가 증가
 
-        if (User.ReturnIsSick())
+        if (User.ReturnMemberData().ReturnIsSick())
             TotalSupportCoeffceint *= DebuffAttackValueOfSick;  //감기에 걸린 상태면 모든 계수 보정 후 최종적으로 25% 차감
 
         #endregion

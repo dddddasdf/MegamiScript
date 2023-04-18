@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     private EnemyRespawnManager DemonSpawnManager;
     private Coroutine EnemyCoroutine;
     private PlayerDataManager PlayerDataScript;    //플레이어 정보를 갖고 있는 스크립트
+    private PartyMemberManager PartyManager;        //파티 담당자
 
     public SkillDatabaseManager SkillDBCaching;    //스킬 DB 스크립트
 
@@ -84,4 +85,8 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
+    public PartyMemberManager ReturnPartyManager()
+    {
+        return PartyManager;
+    }
 }

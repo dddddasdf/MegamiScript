@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -59,9 +61,14 @@ public enum PressTurn
     */
 }
 
-public class BattleManager : MonoBehaviour
+public class BattleManager : MonoBehaviour, IPartyObserver
 {
     #region SetVariables
+
+    /// <summary>
+    /// 테스트용 임시 변수
+    /// </summary>
+    private PartyMemberManager TestPMM = new PartyMemberManager();
 
     [SerializeField] private GameObject BattleCanvasObject;
     private List<MonsterData> BattleEnemyDataList;
@@ -85,13 +92,19 @@ public class BattleManager : MonoBehaviour
     private bool IsPlayerPhase;              //플레이어 페이즈 확인용: true == 플레이어 페이즈/false == 적 페이즈
     private OnBattleObject NowTurnCharacterOfParty;   //플레이어 페이즈 중 현재 행동 중인 아군
 
+#nullable enable
+    private List<OnBattleObject?> NowOnBattleEntryList = new List<OnBattleObject?>(); //현재 전투에 참전 중인 엔트리 리스트
+#nullable disable
     private List<OnBattleObject> TurnOrderList = new List<OnBattleObject>();     //행동턴 배정용 리스트
+    private int MaxNumberOfEntry = 4;       //한 번에 엔트리에 들어오는 멤버 수는 넷
     /*
     아군 행동순서 배정: 엔트리의 상단(좌측)에 있을수록 먼저 행동한다 (진여5의 시스템과 동일)
     
     적 행동순서 배정: 적의 속도에 따라 순서 배정(속도가 같을 경우 랜덤) 
     */
 
+    private OnBattleObject NowSelectedSwapFrom;     //악마를 교체할 때 엔트리에서 교체 대상 아군 데이터를 담는 변수
+    private PartyDemonData NowSelectedSwapTo;       //악마를 교체할 때 스톡에서 교체할 아군 데이터를 담는 변수
 
 
     #endregion
@@ -101,6 +114,12 @@ public class BattleManager : MonoBehaviour
         //BattleEnemyDataList = new List<MonsterData>();
 
         //PartyMemberArray = new PartyMember[4];  //파티 정보 배열 초기화
+        NowOnBattleEntryList.Capacity = MaxNumberOfEntry;       //불필요한 재할당이 일어나지 않도록 미리 크기 설정
+        TurnOrderList.Capacity = MaxNumberOfEntry;     //불필요한 재할당이 일어나지 않도록 미리 크기 설정
+
+        //TestPMM.SaveTMP();
+        //TestPMM.LoadTMP();
+        //SetOnBattlePartyData();
     }
 
     private void Start()
@@ -108,6 +127,24 @@ public class BattleManager : MonoBehaviour
         //GetEnemyData();
         //SetPartyData();
         //SetPlayerTurn();
+    }
+
+    private void OnEnable()
+    {
+        TestScript.Instance.ReturnClass().AddJobQueueMethod(() => TestPMM.SaveTMP());
+    }
+
+    private void OnDisable()
+    {
+        //GameManager.Instance.ReturnPartyManager().RemoveObserver(this);     //파티매니저의 옵저버 리스트에서 해제
+    }
+
+    /// <summary>
+    /// 파티 매니저에게서 갱신 안내 받음
+    /// </summary>
+    public void UpdateEntry()
+    {
+
     }
 
     #region SetBattleInfo
@@ -127,29 +164,55 @@ public class BattleManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 전투 시작시 UI에 파티 정보 세팅
+    /// 전투 시작시 현재 파티 정보 세팅
     /// </summary>
-    private void SetPartyData()
+    private void SetOnBattlePartyData()
     {
-        //BattlePlayerData = GameManager.Instance.GetPlayerData();
+        //플레이어 데이터를 전투 참여 엔트리의 첫번째 멤버로 넣기
+        OnBattleObject PlayerCharacterBattleData = new OnBattleObject();
 
-        for (int i = 0; i < 4; i++)
+        PlayerCharacterBattleData.SetMemberData(GameManager.Instance.ReturnPartyManager().ReturnPlayerCharacterData());
+        PlayerCharacterBattleData.SetIsPlayerCharacter(true);
+        NowOnBattleEntryList.Add(PlayerCharacterBattleData);
+        
+        //동료 악마 리스트 가져오기
+        for (int i = 0; i < 3; i++)
         {
-            PartyMemberArray[i] = GameManager.Instance.GetPartyData(i); //전투 정보 저장용 배열에 파티의 정보를 받아옴
-
-            if (PartyMemberArray[i].IsEmptyMember)
+            if (GameManager.Instance.ReturnPartyManager().ReturnEntryDemonData(i) != null)
             {
-                PartyUIScript.SetEmptyMember(i);
+                OnBattleObject PartyDemonBattleData = new OnBattleObject();
+                PartyDemonBattleData.SetMemberData(GameManager.Instance.ReturnPartyManager().ReturnEntryDemonData(i));
+                PartyDemonBattleData.SetIsPlayerCharacter(false);
+                NowOnBattleEntryList.Add(PartyDemonBattleData);
             }
             else
             {
-                PartyUIScript.SetUIText(i, PartyMemberArray[i].Name, PartyMemberArray[i].MaxHP, PartyMemberArray[i].MaxMP);
-                PartyUIScript.SetHPValue(i, PartyMemberArray[i].RemainHP);
-                PartyUIScript.SetMPValue(i, PartyMemberArray[i].RemainMP);
-
-                PartyMemberNumber++;    //활동 가능한 아군 인원 수 증가
+                NowOnBattleEntryList.Add(null);
             }
         }
+
+
+
+
+        //BattlePlayerData = GameManager.Instance.GetPlayerData();
+        //아래로는 안 쓴다 구조 변경 확정나면 지울 것.
+        //for (int i = 0; i < 4; i++)
+        //{
+        //    PartyMemberArray[i] = GameManager.Instance.GetPartyData(i); //전투 정보 저장용 배열에 파티의 정보를 받아옴
+        //
+        //    if (PartyMemberArray[i].IsEmptyMember)
+        //    {
+        //        PartyUIScript.SetEmptyMember(i);
+        //    }
+        //    else
+        //    {
+        //        PartyUIScript.SetUIText(i, PartyMemberArray[i].Name, PartyMemberArray[i].MaxHP, PartyMemberArray[i].MaxMP);
+        //        PartyUIScript.SetHPValue(i, PartyMemberArray[i].RemainHP);
+        //        PartyUIScript.SetMPValue(i, PartyMemberArray[i].RemainMP);
+        //
+        //        PartyMemberNumber++;    //활동 가능한 아군 인원 수 증가
+        //    }
+        //}
     }
     #endregion
 
@@ -180,9 +243,9 @@ public class BattleManager : MonoBehaviour
     /// <summary>
     /// 동료 악마가 사망할 경우 엔트리에서 제거되고 스톡으로 돌아간다
     /// </summary>
-    public void RemoveInEntry()
+    public void RemoveInEntry(OnBattleObject Target)
     {
-
+        Target.ReturnMemberData();
     }
 
     /// <summary>
@@ -190,16 +253,35 @@ public class BattleManager : MonoBehaviour
     /// </summary>
     public void ChangeEntry()
     {
+        //교체 UI 출력 전달
+    }
+
+    public void NowSelectedEntryTarget()
+    {
 
     }
 
 
     #region CheckTurns
 
-    //임시용
-    private void SetPlayerTurn()
+    /// <summary>
+    /// 플레이어 페이즈 전환
+    /// </summary>
+    private void SetPlayerPhase()
     {
         TurnUIScript.PlacePlayerTurn(PartyMemberNumber);
+        IsPlayerPhase = true;
+
+        if (TurnOrderList.Count != 0)
+            TurnOrderList.Clear();          //만약 행동순서 리스트가 비어있지 않다면 한 번 비워준다
+
+        for (int i = 0; i < NowOnBattleEntryList.Count; i++)
+        {
+            if (NowOnBattleEntryList[i] != null)
+                TurnOrderList.Add(NowOnBattleEntryList[i]);     //행동순서 리스트에 현재 엔트리 된 멤버를 Add로 넣어준다
+        }
+
+        SortPartyTurn();        //속도에 따른 행동순서 배정을 한다
     }
 
     /// <summary>
@@ -216,8 +298,18 @@ public class BattleManager : MonoBehaviour
         {
             //적의 파티에서 현재 생존 중인 멤버수만큼 온전한 한 턴 수를 채워준다
             //그 숫자만큼 배틀 UI 관리자에게 턴 아이콘을 채우라고 전달한다
+            //특정 보스전 같은 예외가 있지만 지금은 그것에 대해 신경쓰지 않는다
         }
 
+    }
+
+    
+    /// <summary>
+    /// 속도에 따라 파티 행동순서를 정렬하는 함수
+    /// </summary>
+    private void SortPartyTurn()
+    {
+        TurnOrderList.Sort((Character1, Character2) =>Character1.ReturnMemberData().ReturnAg().CompareTo(Character1.ReturnMemberData().ReturnAg()));
     }
 
     
