@@ -25,14 +25,6 @@ public class TestScript : MonoBehaviour
 
     }
 
-    public void TestFN()
-    {
-        Debug.Log("°úÄ«¸ô¸®");
-
-        SkillDBCaching.tkffuwnj();
-    }
-
-
     public SkillDatabaseManager ReturnClass()
     {
         return SkillDBCaching;

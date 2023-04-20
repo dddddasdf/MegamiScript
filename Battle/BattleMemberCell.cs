@@ -30,7 +30,6 @@ public class BattleMemberCell : MonoBehaviour
     private Color UnselectedButtonColor = new Color(188 / 255f, 0 / 255f, 0 / 255f, 255 / 255f);   //아직 1사이클 동안 행동하지 않았을 때 행동 순서 상자는 붉은색
 
     [SerializeField] private Image Portrait;        //초상화
-    private Sprite PortraitSprite;      //초상화의 스프라이트
 
     private AsyncOperationHandle<Sprite> PortraitSpriteAssetHandle;
     private StringBuilder PortraitNameSB = new StringBuilder(20);       //포트레이트명용 StringBuilder
@@ -46,7 +45,7 @@ public class BattleMemberCell : MonoBehaviour
 
     private void Awake()
     {
-        PortraitSprite = Portrait.sprite;
+
     }
 
     private void OnDisable()
@@ -74,8 +73,8 @@ public class BattleMemberCell : MonoBehaviour
             NameTMP.text = Tmp.ReturnName();      //이름 출력
             HPTmp.text = Tmp.ReturnNowHP().ToString();      //현재 체력 출력
             MPTmp.text = Tmp.ReturnNowMP().ToString();      //현재 마나 출력
-            HPBar.value = Tmp.ReturnNowHP() / Tmp.ReturnMaxHP();
-            MPBar.value = Tmp.ReturnNowMP() / Tmp.ReturnMaxMP();
+            HPBar.value = ((float)Tmp.ReturnNowHP() / (float)Tmp.ReturnMaxHP()) * 100f;
+            MPBar.value = ((float)Tmp.ReturnNowMP() / (float)Tmp.ReturnMaxMP()) * 100f;
 
             //파티원에 따라 받아올 초상화 변수명 결정
             if (thisCellMemberData.ReturnIsPlayerCharacter())
@@ -90,11 +89,11 @@ public class BattleMemberCell : MonoBehaviour
                 PortraitNameSB.Append("PartyPortrait").Append(TmpDemon.ReturnID());
             }
 
-            PortraitSpriteAssetHandle = Addressables.LoadAssetAsync<Sprite>(PortraitNameSB);
+            PortraitSpriteAssetHandle = Addressables.LoadAssetAsync<Sprite>(PortraitNameSB.ToString());
 
             PortraitSpriteAssetHandle.Completed += Handle =>
             {
-                PortraitSprite = PortraitSpriteAssetHandle.Result;
+                Portrait.sprite = PortraitSpriteAssetHandle.Result;
             };
         }
     }
@@ -117,8 +116,8 @@ public class BattleMemberCell : MonoBehaviour
             NameTMP.text = Tmp.ReturnName();      //이름 출력
             HPTmp.text = Tmp.ReturnNowHP().ToString();      //현재 체력 출력
             MPTmp.text = Tmp.ReturnNowMP().ToString();      //현재 마나 출력
-            HPBar.value = Tmp.ReturnNowHP() / Tmp.ReturnMaxHP();
-            MPBar.value = Tmp.ReturnNowMP() / Tmp.ReturnMaxMP();
+            HPBar.value = ((float)Tmp.ReturnNowHP() / (float)Tmp.ReturnMaxHP()) * 100f;
+            MPBar.value = ((float)Tmp.ReturnNowMP() / (float)Tmp.ReturnMaxMP()) * 100f;
 
             PartyDemonData TmpDemon = (PartyDemonData)Tmp;
             PortraitNameSB.Clear();
@@ -128,7 +127,7 @@ public class BattleMemberCell : MonoBehaviour
 
             PortraitSpriteAssetHandle.Completed += Handle =>
             {
-                PortraitSprite = PortraitSpriteAssetHandle.Result;
+                Portrait.sprite = PortraitSpriteAssetHandle.Result;
             };
         }
     }
@@ -150,7 +149,7 @@ public class BattleMemberCell : MonoBehaviour
     public void RefreshHP()
     {
         HPTmp.text = thisCellMemberData.ReturnMemberData().ReturnNowHP().ToString();
-        HPBar.value = thisCellMemberData.ReturnMemberData().ReturnNowHP() / thisCellMemberData.ReturnMemberData().ReturnMaxHP();
+        HPBar.value = ((float)thisCellMemberData.ReturnMemberData().ReturnNowHP() / (float)thisCellMemberData.ReturnMemberData().ReturnMaxHP()) * 100f;
     }
 
     /// <summary>
@@ -159,7 +158,7 @@ public class BattleMemberCell : MonoBehaviour
     public void RefreshMP()
     {
         MPTmp.text = thisCellMemberData.ReturnMemberData().ReturnNowMP().ToString();
-        MPBar.value = thisCellMemberData.ReturnMemberData().ReturnNowMP() / thisCellMemberData.ReturnMemberData().ReturnMaxMP();
+        MPBar.value = ((float)thisCellMemberData.ReturnMemberData().ReturnNowMP() / (float)thisCellMemberData.ReturnMemberData().ReturnMaxMP()) * 100f;
     }
 
     /// <summary>

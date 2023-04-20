@@ -105,7 +105,7 @@ public enum TargetStats
 #endregion
 
 
-[System.Serializable]
+[System.Serializable][JsonObject(MemberSerialization.OptIn)]
 public record SkillDataRec
 {
     /// <summary>
@@ -144,27 +144,28 @@ public record SkillDataRec
         EffectValue = effectValue;
     }
 
-    private SkillTypeSort SkillType { get; init; } //스킬 유형
-    private int ID { get; init; }              //식별 ID
-    private int Rank { get; init; }            //스킬 랭크
-    private string Name { get; init; }         //스킬 이름
-    private int UseMP { get; init; }           //소모 마나
-    private WhichTarget Target { get; init; }  //적용 대상
-    private NumberOfTarget? thisTargetNumber { get; init; }   //스킬 대상 개체 수
-    private int MinHits { get; init; }         //최소 횟수
-    private int MaxHits { get; init; }         //최다 횟수
-    private int? Power { get; init; }          //위력: 위력이 필요 하지 않은 스킬일 경우 null
-    private int Accuracy { get; init; }        //명중률
-    private string Description { get; init; }  //스킬 설명
-    private EffectType? AddEffect { get; init; }        //부가 효과: 없을 경우 null
-    private int? EffectValue { get; init; }                    //부가 효과의 수치: 없을 경우 null
+    
+    [JsonProperty] private SkillTypeSort SkillType { get; init; } //스킬 유형
+    [JsonProperty] private int ID { get; init; }              //식별 ID
+    [JsonProperty] private int Rank { get; init; }            //스킬 랭크
+    [JsonProperty] private string Name { get; init; }         //스킬 이름
+    [JsonProperty] private int UseMP { get; init; }           //소모 마나
+    [JsonProperty] private WhichTarget Target { get; init; }  //적용 대상
+    [JsonProperty] private NumberOfTarget? thisTargetNumber { get; init; }   //스킬 대상 개체 수
+    [JsonProperty] private int MinHits { get; init; }         //최소 횟수
+    [JsonProperty] private int MaxHits { get; init; }         //최다 횟수
+    [JsonProperty] private int? Power { get; init; }          //위력: 위력이 필요 하지 않은 스킬일 경우 null
+    [JsonProperty] private int Accuracy { get; init; }        //명중률
+    [JsonProperty] private string Description { get; init; }  //스킬 설명
+    [JsonProperty] private EffectType? AddEffect { get; init; }        //부가 효과: 없을 경우 null
+    [JsonProperty] private int? EffectValue { get; init; }                    //부가 효과의 수치: 없을 경우 null
     /*
     부가 효과의 수치에 대한 세부 설명
     -물리 스킬 중 크리티컬율 증가의 경우: 크리티컬율이 증가하는 고정 수치
     -만능 스킬의 경우: 흡수율 퍼센티지
     -상태이상 스킬의 경우: 해당 상태이상이 부여될 확률
     */
-    private TargetStats? EffectStats { get; init; }        //추가 효과(흡수, 회복, 버프, 디버프기)에서 대상이 되는 스탯
+    [JsonProperty] private TargetStats? EffectStats { get; init; }        //추가 효과(흡수, 회복, 버프, 디버프기)에서 대상이 되는 스탯
 
     /// <summary>
     /// 스킬명 반환
@@ -263,9 +264,7 @@ public class SkillDatabaseManager
             {
 
             }
-
             SkillRecList = JsonConvert.DeserializeObject<List<SkillDataRec>>(TextAssetHandle.Result.text);
-            Debug.Log("호출2");
 
             while (AfterInitJobQueue.Count > 0)
             {
@@ -275,14 +274,6 @@ public class SkillDatabaseManager
 
             AfterInitJobQueue = null;       //작업큐 비워주기
         };
-    }
-
-    /// <summary>
-    /// 임시용
-    /// </summary>
-    public void tkffuwnj()
-    {
-        Debug.Log(SkillRecList[1].ReturnName());
     }
 
     public void AddJobQueueMethod(Action Method)

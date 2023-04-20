@@ -47,7 +47,7 @@ public enum SkillAffinities
 [Flags]
 public enum AilmentType
 {
-    None = 0   //상태이상 없음
+    [JsonProperty] None = 0   //상태이상 없음
 
     , Poison = 1 << 0    //독 - 전투에서 행동시 체력 감소, 필드에서 이동시 체력 감소/자동 회복X
     , Sick = 1 << 1      //감기 - 전투에서 공격력 25% 하락, 회피율 0%로 하락, 턴 종료마다 5%의 확률로 타 아군 캐릭터에게 감염/자동 회복X
@@ -87,7 +87,7 @@ public class PartyMemberData
     [JsonProperty] private int Level = 0;       //현재 레벨
     [JsonProperty] private int EXP = 0;         //현재 경험치
 
-    [JsonIgnore] private List<SkillDataRec> LearnedSkillList = new List<SkillDataRec>();     //습득한 스킬 리스트
+    [JsonProperty] private List<SkillDataRec> LearnedSkillList = new List<SkillDataRec>();     //습득한 스킬 리스트
 
     [JsonProperty] private SkillAffinities? AffinityPhysical { get; init; }
     [JsonProperty] private SkillAffinities? AffinityGun { get; init; }
@@ -564,11 +564,12 @@ public class PartyMemberManager : IPartySubject
 
     #endregion
 
-    private readonly JsonSerializerSettings serializerSetting = new()
+    private Queue<Action> AfterInitJobQueue = new Queue<Action>();      //초기화 작업 후 순차적으로 진행시킬 작업 목록
+    public void AddJobQueueMethod(Action Method)
     {
-        Formatting = Formatting.Indented,
-        ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy() },
-    };
+        AfterInitJobQueue.Enqueue(Method);
+    }
+
 
     public void SaveTMP()
     {
@@ -606,18 +607,23 @@ public class PartyMemberManager : IPartySubject
             EntryDemonList = PartyDemonList;
         };
 
-        //AsyncOperationHandle<TextAsset> TextAssetHandle2;
-        //TextAssetHandle2 = Addressables.LoadAssetAsync<TextAsset>("TestPlayer");
-        //TextAssetHandle2.Completed += Handle =>
-        //{
-        //    if (TextAssetHandle2.Status == AsyncOperationStatus.Failed)
-        //    {
-        //        int b = 100;
-        //    }
-        //
-        //    PlayerCharacter = JsonConvert.DeserializeObject<PlayerCharacterData>(TextAssetHandle2.Result.text);
-        //    Addressables.Release(TextAssetHandle2);
-        //};
+        AsyncOperationHandle<TextAsset> TextAssetHandle2;
+        TextAssetHandle2 = Addressables.LoadAssetAsync<TextAsset>("TestPlayer");
+        TextAssetHandle2.Completed += Handle =>
+        {
+            if (TextAssetHandle2.Status == AsyncOperationStatus.Failed)
+            {
+                int b = 100;
+            }
+        
+            PlayerCharacter = JsonConvert.DeserializeObject<PlayerCharacterData>(TextAssetHandle2.Result.text);
+            Addressables.Release(TextAssetHandle2);
+            while (AfterInitJobQueue.Count > 0)
+            {
+                Action action = AfterInitJobQueue.Dequeue();
+                action?.Invoke();
+            }
+        };
 
         int i = 0;
     }

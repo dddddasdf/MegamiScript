@@ -117,9 +117,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         NowOnBattleEntryList.Capacity = MaxNumberOfEntry;       //불필요한 재할당이 일어나지 않도록 미리 크기 설정
         TurnOrderList.Capacity = MaxNumberOfEntry;     //불필요한 재할당이 일어나지 않도록 미리 크기 설정
 
-        //TestPMM.SaveTMP();
-        //TestPMM.LoadTMP();
-        //SetOnBattlePartyData();
+        TestPMM.LoadTMP();
     }
 
     private void Start()
@@ -127,12 +125,12 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         //GetEnemyData();
         //SetPartyData();
         //SetPlayerTurn();
+        int i = 0;
+        TestPMM.AddJobQueueMethod(()=> SetOnBattlePartyData());
+        TestPMM.AddJobQueueMethod(() => PartyUIScript.InitPartyDisplay(NowOnBattleEntryList));
+        //TestScript.Instance.ReturnClass().AddJobQueueMethod(() => TestPMM.SaveTMP());
     }
 
-    private void OnEnable()
-    {
-        TestScript.Instance.ReturnClass().AddJobQueueMethod(() => TestPMM.SaveTMP());
-    }
 
     private void OnDisable()
     {
@@ -171,17 +169,37 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         //플레이어 데이터를 전투 참여 엔트리의 첫번째 멤버로 넣기
         OnBattleObject PlayerCharacterBattleData = new OnBattleObject();
 
-        PlayerCharacterBattleData.SetMemberData(GameManager.Instance.ReturnPartyManager().ReturnPlayerCharacterData());
+        //PlayerCharacterBattleData.SetMemberData(GameManager.Instance.ReturnPartyManager().ReturnPlayerCharacterData());
+        //PlayerCharacterBattleData.SetIsPlayerCharacter(true);
+        //NowOnBattleEntryList.Add(PlayerCharacterBattleData);
+
+        //테스트용 빌드. 아래 지울 것
+        PlayerCharacterBattleData.SetMemberData(TestPMM.ReturnPlayerCharacterData());
         PlayerCharacterBattleData.SetIsPlayerCharacter(true);
         NowOnBattleEntryList.Add(PlayerCharacterBattleData);
-        
+
         //동료 악마 리스트 가져오기
+        //for (int i = 0; i < 3; i++)
+        //{
+        //    if (GameManager.Instance.ReturnPartyManager().ReturnEntryDemonData(i) != null)
+        //    {
+        //        OnBattleObject PartyDemonBattleData = new OnBattleObject();
+        //        PartyDemonBattleData.SetMemberData(GameManager.Instance.ReturnPartyManager().ReturnEntryDemonData(i));
+        //        PartyDemonBattleData.SetIsPlayerCharacter(false);
+        //        NowOnBattleEntryList.Add(PartyDemonBattleData);
+        //    }
+        //    else
+        //    {
+        //        NowOnBattleEntryList.Add(null);
+        //    }
+        //}
+
         for (int i = 0; i < 3; i++)
         {
-            if (GameManager.Instance.ReturnPartyManager().ReturnEntryDemonData(i) != null)
+            if (TestPMM.ReturnEntryDemonData(i) != null)
             {
                 OnBattleObject PartyDemonBattleData = new OnBattleObject();
-                PartyDemonBattleData.SetMemberData(GameManager.Instance.ReturnPartyManager().ReturnEntryDemonData(i));
+                PartyDemonBattleData.SetMemberData(TestPMM.ReturnEntryDemonData(i));
                 PartyDemonBattleData.SetIsPlayerCharacter(false);
                 NowOnBattleEntryList.Add(PartyDemonBattleData);
             }
@@ -190,8 +208,6 @@ public class BattleManager : MonoBehaviour, IPartyObserver
                 NowOnBattleEntryList.Add(null);
             }
         }
-
-
 
 
         //BattlePlayerData = GameManager.Instance.GetPlayerData();
