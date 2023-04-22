@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using UnityEngine;
@@ -62,13 +63,29 @@ public enum AilmentType
 [System.Serializable][JsonObject(MemberSerialization.OptIn)]
 public class PartyMemberData
 {
-    public PartyMemberData()
-    {
+    //public PartyMemberData(string Name, int MaxHP, int NowHP, int MaxMP, int NowMP, bool IsDead, int St, int Dx, int Ma, int Ag, int Lu,
+    //    AilmentType NowAilment, int BeginningLevel, int Level, int EXP, List<SkillDataRec> LearnedSkillList)
+    //{
+    //    this.Name = Name;
+    //    this.MaxHP = MaxHP;
+    //    this.NowHP = NowHP;
+    //    this.MaxMP = MaxMP;
+    //    this.NowMP = NowMP;
+    //    this.IsDead = IsDead;
+    //    this.St = St;
+    //    this.Dx = Dx;
+    //    this.Ma = Ma;
+    //    this.Ag = Ag;
+    //    this.Lu = Lu;
+    //    this.NowAilment = NowAilment;
+    //    this.BeginningLevel = BeginningLevel;
+    //    this.Level = Level;
+    //    this.EXP = EXP;
+    //    this.LearnedSkillList = LearnedSkillList.ToList();      //리스트 깊은 복사
+    //}
 
-    }
-    
     #region Field
-    [JsonProperty] private string Name = "tst"; // { get; init; }     //이름
+    [JsonProperty] private string Name;     //이름
     [JsonProperty] private int MaxHP = 0;       //최대 체력
     [JsonProperty] private int NowHP = 0;       //현재 체력
     [JsonProperty] private int MaxMP = 0;       //최대 마나
@@ -466,6 +483,15 @@ public class PartyMemberData
 [System.Serializable][JsonObject(MemberSerialization.OptIn)]
 public class PartyDemonData : PartyMemberData
 {
+    //public PartyDemonData(string Name, int MaxHP, int NowHP, int MaxMP, int NowMP, bool IsDead, int St, int Dx, int Ma, int Ag, int Lu,
+    //    AilmentType NowAilment, int BeginningLevel, int Level, int EXP, List<SkillDataRec> LearnedSkillList,
+    //    int ID, bool IsEntry)
+    //    : base(Name, MaxHP, NowHP, MaxMP, NowMP, IsDead, St, Dx, Ma, Ag, Lu, NowAilment, BeginningLevel, Level, EXP, LearnedSkillList)
+    //{
+    //    this.ID = ID;
+    //    this.IsEntry = IsEntry;
+    //}
+    
     [JsonProperty] private int ID = 0;          //악마 식별 번호
     [JsonProperty] private bool IsEntry = false;    //출전 중인지 확인용
 
@@ -524,7 +550,12 @@ public class PartyDemonData : PartyMemberData
 [System.Serializable]
 public class PlayerCharacterData : PartyMemberData
 {
-
+    //public PlayerCharacterData(string Name, int MaxHP, int NowHP, int MaxMP, int NowMP, bool IsDead, int St, int Dx, int Ma, int Ag, int Lu,
+    //    AilmentType NowAilment, int BeginningLevel, int Level, int EXP, List<SkillDataRec> LearnedSkillList)
+    //    : base(Name, MaxHP, NowHP, MaxMP, NowMP, IsDead, St, Dx, Ma, Ag, Lu, NowAilment, BeginningLevel, Level, EXP, LearnedSkillList)
+    //{
+ 
+    //}
 }
 
 #endregion
@@ -573,19 +604,19 @@ public class PartyMemberManager : IPartySubject
 
     public void SaveTMP()
     {
-        PartyDemonData TMP = new PartyDemonData();
-        TMP.AddNewSkill(TestScript.Instance.ReturnClass().ReturnSkillData(1));
-
-        
-
-        StringBuilder SaveSB = new StringBuilder();
-        SaveSB.Append("test.json");
-        string JsonFile;
-        //= JsonUtility.ToJson(TMP);
-        JsonFile = JsonConvert.SerializeObject(TMP, Formatting.Indented);
-        Debug.Log(JsonFile);
-        string SaveDataDirectory = Application.persistentDataPath + "/SaveData/";
-        File.WriteAllText(SaveDataDirectory + SaveSB.ToString(), JsonFile);
+        //PartyDemonData TMP = new PartyDemonData();
+        //TMP.AddNewSkill(TestScript.Instance.ReturnClass().ReturnSkillData(1));
+        //
+        //
+        //
+        //StringBuilder SaveSB = new StringBuilder();
+        //SaveSB.Append("test.json");
+        //string JsonFile;
+        ////= JsonUtility.ToJson(TMP);
+        //JsonFile = JsonConvert.SerializeObject(TMP, Formatting.Indented);
+        //Debug.Log(JsonFile);
+        //string SaveDataDirectory = Application.persistentDataPath + "/SaveData/";
+        //File.WriteAllText(SaveDataDirectory + SaveSB.ToString(), JsonFile);
     }
 
     /// <summary>

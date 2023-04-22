@@ -70,4 +70,15 @@ public class PartyUI : MonoBehaviour
     {
         MemberScriptArray[MemberNumber].NowTurn();
     }
+    
+    public void DeactiveTurn(int MemberNumber)
+    {
+        MemberScriptArray[MemberNumber].EndTurn();
+    }
 }
+
+
+/*
+교체한 동료 악마의 바뀐 턴에 따라 현재턴 아님 스크린 덧씌우는 작업 처리 해야 됨,,, 
+ 
+ */

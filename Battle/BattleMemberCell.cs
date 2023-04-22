@@ -76,6 +76,8 @@ public class BattleMemberCell : MonoBehaviour
             HPBar.value = ((float)Tmp.ReturnNowHP() / (float)Tmp.ReturnMaxHP()) * 100f;
             MPBar.value = ((float)Tmp.ReturnNowMP() / (float)Tmp.ReturnMaxMP()) * 100f;
 
+            NotNowTurnScreen.enabled = false;       //미리 현재 턴 아님 스크린 덧씌워두기
+
             //파티원에 따라 받아올 초상화 변수명 결정
             if (thisCellMemberData.ReturnIsPlayerCharacter())
             {
@@ -118,6 +120,8 @@ public class BattleMemberCell : MonoBehaviour
             MPTmp.text = Tmp.ReturnNowMP().ToString();      //현재 마나 출력
             HPBar.value = ((float)Tmp.ReturnNowHP() / (float)Tmp.ReturnMaxHP()) * 100f;
             MPBar.value = ((float)Tmp.ReturnNowMP() / (float)Tmp.ReturnMaxMP()) * 100f;
+
+            NotNowTurnScreen.enabled = false;
 
             PartyDemonData TmpDemon = (PartyDemonData)Tmp;
             PortraitNameSB.Clear();
@@ -166,14 +170,16 @@ public class BattleMemberCell : MonoBehaviour
     /// </summary>
     public void NowTurn()
     {
+        NotNowTurnScreen.enabled = false;
         Frame.color = Color.green;
     }
 
     /// <summary>
-    /// 조작턴이 종료되면 프레임을 흰색으로 변경
+    /// 조작턴이 종료되면 프레임을 흰색으로 변경 및 비활성화 효과 처리
     /// </summary>
     public void EndTurn()
     {
+        NotNowTurnScreen.enabled = true;
         Frame.color = Color.white;
     }
 }

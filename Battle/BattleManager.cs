@@ -86,8 +86,9 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     private int NumberOfEnemyWholeTurn;     //적 턴에서 남아있는 온전한 한 턴 수
     private int NumberOfEnemyHalfTurn;      //적 턴에서 남아있는 절반 턴 수
 
-    private int NumberOfWholeTurn;          //온전한 한 턴 수
-    private int NumberOfHalfTurn;           //절반 턴 수
+    private int NumberOfWholeTurn = 0;          //온전한 한 턴 수
+    private int NumberOfHalfTurn = 0;           //절반 턴 수
+    private int NumberOfUsedTurn = 0;           //소모한 턴 마크 수
 
     private bool IsPlayerPhase;              //플레이어 페이즈 확인용: true == 플레이어 페이즈/false == 적 페이즈
     private OnBattleObject NowTurnCharacterOfParty;   //플레이어 페이즈 중 현재 행동 중인 아군
@@ -96,7 +97,12 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     private List<OnBattleObject?> NowOnBattleEntryList = new List<OnBattleObject?>(); //현재 전투에 참전 중인 엔트리 리스트
 #nullable disable
     private List<OnBattleObject> TurnOrderList = new List<OnBattleObject>();     //행동턴 배정용 리스트
-    private int MaxNumberOfEntry = 4;       //한 번에 엔트리에 들어오는 멤버 수는 넷
+    private List<int> TurnOrderIndexList = new List<int>();     //행동턴 배정용 인덱스 리스트
+    private int NumberOfOnBattleParty = 0;           //현재 생존해서 전투 중인 파티원 수
+
+    private int NumberOfOnBattleEnemy = 0;          //현재 생존해서 전투 중인 적의 수
+
+    private int MaxNumberOfEntry = 4;       //한 번에 엔트리에 들어오는 멤버 수는 넷-초기화할 때 크기 지정용
     /*
     아군 행동순서 배정: 엔트리의 상단(좌측)에 있을수록 먼저 행동한다 (진여5의 시스템과 동일)
     
@@ -128,6 +134,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         int i = 0;
         TestPMM.AddJobQueueMethod(()=> SetOnBattlePartyData());
         TestPMM.AddJobQueueMethod(() => PartyUIScript.InitPartyDisplay(NowOnBattleEntryList));
+        TestPMM.AddJobQueueMethod(() => SetPlayerPhase());
         //TestScript.Instance.ReturnClass().AddJobQueueMethod(() => TestPMM.SaveTMP());
     }
 
@@ -177,6 +184,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         PlayerCharacterBattleData.SetMemberData(TestPMM.ReturnPlayerCharacterData());
         PlayerCharacterBattleData.SetIsPlayerCharacter(true);
         NowOnBattleEntryList.Add(PlayerCharacterBattleData);
+        NumberOfOnBattleParty++;
 
         //동료 악마 리스트 가져오기
         //for (int i = 0; i < 3; i++)
@@ -202,6 +210,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
                 PartyDemonBattleData.SetMemberData(TestPMM.ReturnEntryDemonData(i));
                 PartyDemonBattleData.SetIsPlayerCharacter(false);
                 NowOnBattleEntryList.Add(PartyDemonBattleData);
+                NumberOfOnBattleParty++;
             }
             else
             {
@@ -262,6 +271,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     public void RemoveInEntry(OnBattleObject Target)
     {
         Target.ReturnMemberData();
+        NumberOfOnBattleParty--;
     }
 
     /// <summary>
@@ -291,13 +301,13 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         if (TurnOrderList.Count != 0)
             TurnOrderList.Clear();          //만약 행동순서 리스트가 비어있지 않다면 한 번 비워준다
 
-        for (int i = 0; i < NowOnBattleEntryList.Count; i++)
-        {
-            if (NowOnBattleEntryList[i] != null)
-                TurnOrderList.Add(NowOnBattleEntryList[i]);     //행동순서 리스트에 현재 엔트리 된 멤버를 Add로 넣어준다
-        }
+        if (TurnOrderIndexList.Count != 0)
+            TurnOrderIndexList.Clear();
 
-        SortPartyTurn();        //속도에 따른 행동순서 배정을 한다
+        //SortPartyTurn();        //속도에 따른 행동순서 배정을 한다
+        FillNumberOfTurn();
+        SetPartyTurnOrder();
+        
     }
 
     /// <summary>
@@ -307,8 +317,9 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     {
         if (IsPlayerPhase)
         {
-            //플레이어의 파티에서 현재 생존 중인 멤버수만큼 온전한 한 턴 수를 채워준다
-            //그 숫자만큼 배틀 UI 관리자에게 턴 아이콘을 채우라고 전달한다
+            NumberOfWholeTurn = NumberOfOnBattleParty;           //채워지는 온전한 턴 수 = 현재 생존 중인 파티 멤버수
+            NumberOfHalfTurn = 0;                           //절반 턴 수 0으로 초기화
+            TurnUIScript.PlacePlayerTurn(NumberOfOnBattleParty);         //생존 중인 파티 멤버수만큼 턴 마크 표시
         }
         else
         {
@@ -319,13 +330,48 @@ public class BattleManager : MonoBehaviour, IPartyObserver
 
     }
 
+    /// <summary>
+    /// 현재 턴인 파티원과 턴 대기열 관리
+    /// </summary>
+    private void SetPartyTurnOrder()
+    {
+        //턴 순서 대기열이 비어있다면 속도에 따라 턴 순서 배정
+        if (TurnOrderIndexList.Count == 0)
+        {
+            for (int i = 0; i < NowOnBattleEntryList.Count; i++)
+            {
+                if (NowOnBattleEntryList[i] != null)
+                {
+                    TurnOrderList.Add(NowOnBattleEntryList[i]);     //행동순서 리스트에 현재 엔트리 된 멤버를 Add로 넣어준다
+                    TurnOrderIndexList.Add(i);
+                }
+            }
+
+            TurnOrderList.Sort((Character1, Character2) => Character1.ReturnMemberData().ReturnAg().CompareTo(Character1.ReturnMemberData().ReturnAg()));
+            TurnOrderIndexList.Sort((n1, n2) => NowOnBattleEntryList[n2].ReturnMemberData().ReturnAg().CompareTo(NowOnBattleEntryList[n1].ReturnMemberData().ReturnAg()));
+        }
+        
+        PartyUIScript.ActiveTurn(TurnOrderIndexList[0]);        //현재 행동하게 되는 캐릭터의 턴 활성화 표시
+    }
+
     
     /// <summary>
     /// 속도에 따라 파티 행동순서를 정렬하는 함수
     /// </summary>
     private void SortPartyTurn()
     {
-        TurnOrderList.Sort((Character1, Character2) =>Character1.ReturnMemberData().ReturnAg().CompareTo(Character1.ReturnMemberData().ReturnAg()));
+        for (int i = 0; i < NowOnBattleEntryList.Count; i++)
+        {
+            if (NowOnBattleEntryList[i] != null)
+            {
+                TurnOrderList.Add(NowOnBattleEntryList[i]);     //행동순서 리스트에 현재 엔트리 된 멤버를 Add로 넣어준다
+                TurnOrderIndexList.Add(i);
+                
+            }
+        }
+
+        TurnOrderList.Sort((Character1, Character2) => Character1.ReturnMemberData().ReturnAg().CompareTo(Character1.ReturnMemberData().ReturnAg()));
+        TurnOrderIndexList.Sort((n1, n2) => NowOnBattleEntryList[n1].ReturnMemberData().ReturnAg().CompareTo(NowOnBattleEntryList[n2].ReturnMemberData().ReturnAg()));
     }
 
     
@@ -338,39 +384,88 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         switch (TurnFlag)
         {
             case PressTurn.ReduceAllTurn:
-                NumberOfWholeTurn = 0;
-                NumberOfHalfTurn = 0;
-                //페이즈 종료 및 상대 페이즈 전환 함수 기입
-                //턴 삭제 및 페이즈 전환 연출 함수 기입
-                //생각해보니 위엣것들 남은 턴이 전부 0 이하가 되면 페이즈 넘어가도록 액션 예약 걸어두면 되나?
+                {
+                    NumberOfWholeTurn = 0;
+                    NumberOfHalfTurn = 0;
+                    //페이즈 종료 및 상대 페이즈 전환 함수 기입
+                    //턴 삭제 및 페이즈 전환 연출 함수 기입
+                    //생각해보니 위엣것들 남은 턴이 전부 0 이하가 되면 페이즈 넘어가도록 액션 예약 걸어두면 되나?
+
+                    TurnUIScript.HideAllMark(IsPlayerPhase);        //모든 남은 턴 감추기
+
+                    //if (IsPlayerPhase)
+                    //    TurnUIScript.HideAllPlayerMark();
+                    //else
+                    //    TurnUIScript.HideAllEnemyMark();
+                }
                 break;
             case PressTurn.ReduceTwoTurn:
                 {
                     if (NumberOfHalfTurn >= 2)
+                    {
+                        //온전한 턴 2턴 차감
+                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 2, IsPlayerPhase);       //절반 턴 2개 감추기
                         NumberOfHalfTurn -= 2;
+                    }
                     else if (NumberOfHalfTurn == 1 && NumberOfWholeTurn >= 1)
                     {
+                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
                         NumberOfHalfTurn -= 1;
+                        TurnUIScript.HideWholeTurnMark(NumberOfWholeTurn, 1, IsPlayerPhase);        //온전한 턴 1개 감추기
                         NumberOfWholeTurn -= 1;
+                        NumberOfUsedTurn += 2;
+                    }
+                    else if (NumberOfHalfTurn == 1 && NumberOfWholeTurn == 0)
+                    {
+                        //현재 행동 턴수가 절반 턴 1개만 남아있다면 2개 차감이 사실상 전부 차감과 마찬가지
+                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
+                        NumberOfHalfTurn -= 1;
+                    }
+                    else if (NumberOfWholeTurn == 1)
+                    {
+                        //현재 행동 턴수가 온전한 턴 1개만 남아있다면 2개 차감이 사실상 전부 차감과 마찬가지
+                        TurnUIScript.HideWholeTurnMark(NumberOfWholeTurn, 1, IsPlayerPhase);        //온전한 턴 1개 감추기
+                        NumberOfWholeTurn -= 1;
+                        NumberOfUsedTurn += 1;
                     }
                     else
+                    {
+                        TurnUIScript.HideWholeTurnMark(NumberOfWholeTurn, 2, IsPlayerPhase);        //온전한 턴 2개 감추기
                         NumberOfWholeTurn -= 2;
+                        NumberOfUsedTurn += 2;
+                    }
                 }
                 break;
             case PressTurn.ReduceHalfTurn:
                 {
                     if (NumberOfHalfTurn >= 1)
+                    {
+                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
                         NumberOfHalfTurn -= 1;
+                        NumberOfUsedTurn += 1;
+                    }
                     else
+                    {
+                        TurnUIScript.HideWholeTurnMark(NumberOfWholeTurn, 1, IsPlayerPhase);        //온전한 턴 1개 감추기
                         NumberOfWholeTurn -= 1;
+                        NumberOfUsedTurn += 1;
+                    }
                 }
                 break;
             case PressTurn.ReduceHalfTurn_Party:
                 {
                     if (NumberOfHalfTurn >= 1)
-                        NumberOfHalfTurn -= 1;
+                    {
+                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
+                        NumberOfHalfTurn -= 1;      //남아있는 절반 턴 1개 차감
+                        NumberOfUsedTurn += 1;
+                    }
                     else
                     {
+                        if (IsPlayerPhase)
+                            TurnUIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleParty);       //절반 턴 1개 추가
+                        else
+                            TurnUIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleEnemy);       //절반 턴 1개 추가
                         NumberOfWholeTurn -= 1;
                         NumberOfHalfTurn += 1;
                     }    
@@ -378,19 +473,69 @@ public class BattleManager : MonoBehaviour, IPartyObserver
                 break;
             case PressTurn.ChangeHalfTurn:
                 {
-                    if (NumberOfWholeTurn >= 1)
+                    if (NumberOfWholeTurn == 0 && NumberOfHalfTurn != 0)
                     {
+                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);
+                        NumberOfHalfTurn -= 1;
+                        NumberOfUsedTurn += 1;
+                    }
+                    else
+                    {
+                        if (IsPlayerPhase)
+                            TurnUIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleParty);       //절반 턴 1개 추가
+                        else
+                            TurnUIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleEnemy);       //절반 턴 1개 추가
                         NumberOfWholeTurn -= 1;
                         NumberOfHalfTurn += 1;
                     }
-                    else
-                        NumberOfHalfTurn -= 1;
                 }
                 break;
         }
 
-        if (NumberOfWholeTurn == 0 && NumberOfHalfTurn == 0)
+        if (NumberOfWholeTurn <= 0 && NumberOfHalfTurn <= 0)
+        {
             IsPlayerPhase = !IsPlayerPhase;   //사용 가능 행동턴 수가 0이 되었을 경우 상대방 페이즈로 넘어간다
+            //페이즈 전환 함수 호출
+            NumberOfUsedTurn = 0;
+        }
+        else
+        {
+            if (IsPlayerPhase)
+            {
+                PartyUIScript.DeactiveTurn(TurnOrderIndexList[0]);      //행동턴을 마친 캐릭터의 턴 완료 표시
+                TurnOrderIndexList.RemoveAt(0);           //행동턴을 마친 캐릭터는 턴 대기열에서 빠진다
+                SetPartyTurnOrder();
+            }
+            else
+            {
+
+            }
+        }
+    }
+
+    public void TestOne()
+    {
+        ReduceTurn(PressTurn.ReduceAllTurn);
+    }
+
+    public void TestTwo()
+    {
+        ReduceTurn(PressTurn.ReduceTwoTurn);
+    }
+
+    public void TestThree()
+    {
+        ReduceTurn(PressTurn.ReduceHalfTurn);
+    }
+
+    public void TestFour()
+    {
+        ReduceTurn(PressTurn.ReduceHalfTurn_Party);
+    }
+
+    public void TestFive()
+    {
+        ReduceTurn(PressTurn.ChangeHalfTurn);
     }
 
     #endregion
