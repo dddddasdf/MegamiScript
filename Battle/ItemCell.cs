@@ -30,9 +30,9 @@ public class ItemCell : InfiniteScrollItem
         ItemName.text = ThisCellData.ItemInfo.Name.ToString();
         NumberOfPossess.text = ThisCellData.ItemInfo.NumberOfNowPossess.ToString() + "/" + ThisCellData.ItemInfo.NumberOfMax.ToString();
 
-        if (ThisCellData.IsSelected)
+        if (ThisCellData.ReturnIsSelected())
             ThisCellImage.color = SelectedButtonColor;
-        else if (ThisCellImage.color == SelectedButtonColor && ThisCellData.IsSelected == false)
+        else if (ThisCellImage.color == SelectedButtonColor && ThisCellData.ReturnIsSelected() == false)
             ThisCellImage.color = UnselectedButtonColor;
     }
 

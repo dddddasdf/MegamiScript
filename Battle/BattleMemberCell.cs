@@ -34,7 +34,7 @@ public class BattleMemberCell : MonoBehaviour
     private AsyncOperationHandle<Sprite> PortraitSpriteAssetHandle;
     private StringBuilder PortraitNameSB = new StringBuilder(20);       //포트레이트명용 StringBuilder
 
-    private OnBattleObject thisCellMemberData;
+    private OnBattlePartyObject thisCellMemberData;
 
     #endregion
 
@@ -59,7 +59,7 @@ public class BattleMemberCell : MonoBehaviour
     /// 정보 받아와서 UI에 출력시키기
     /// </summary>
     /// <param name="MemberData"></param>
-    public void SetMemberCell(OnBattleObject? MemberData)
+    public void SetMemberCell(OnBattlePartyObject? MemberData)
     {
         if (MemberData == null)
         {
@@ -69,7 +69,7 @@ public class BattleMemberCell : MonoBehaviour
         else
         {
             thisCellMemberData = MemberData;
-            PartyMemberData Tmp = thisCellMemberData.ReturnMemberData();    //임시 변수
+            PartyMemberData Tmp = thisCellMemberData.ReturnMemberData();    //파티 멤버 데이터를 받아올 임시 변수
             NameTMP.text = Tmp.ReturnName();      //이름 출력
             HPTmp.text = Tmp.ReturnNowHP().ToString();      //현재 체력 출력
             MPTmp.text = Tmp.ReturnNowMP().ToString();      //현재 마나 출력
@@ -81,12 +81,13 @@ public class BattleMemberCell : MonoBehaviour
             //파티원에 따라 받아올 초상화 변수명 결정
             if (thisCellMemberData.ReturnIsPlayerCharacter())
             {
+                //주인공일 경우 주인공 초상화
                 PortraitNameSB.Clear();
                 PortraitNameSB.Append("Flynn");
             }
             else
             {
-                PartyDemonData TmpDemon = (PartyDemonData)Tmp;
+                PartyDemonData TmpDemon = (PartyDemonData)Tmp;      //악마의 정보를 받아올 임시 변수
                 PortraitNameSB.Clear();
                 PortraitNameSB.Append("PartyPortrait").Append(TmpDemon.ReturnID());
             }
@@ -104,7 +105,7 @@ public class BattleMemberCell : MonoBehaviour
     /// 파티 멤버 교체 or 이탈, 이 함수는 동료 악마들에게만 사용한다 (주인공은 사망해도 파티에서 이탈하지 않으며, 동료악마와 교체할 수 없다)
     /// </summary>
     /// <param name="MemberData"></param>
-    public void SwapMemberData(OnBattleObject? MemberData)
+    public void SwapMemberData(OnBattlePartyObject? MemberData)
     {
         if (MemberData == null)
         {

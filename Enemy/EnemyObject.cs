@@ -109,7 +109,7 @@ public class EnemyObject : MonoBehaviour
     {
         if (Collision.collider == PlayerTarget[0])
         {
-            EnemyData.SetIndexList(EnemyIndexList); //악마 데이터 담당 스크립트에게 가지고 있는 인덱스 목록을 넘겨줌
+            EnemyDatabaseManager.SetIndexList(EnemyIndexList); //악마 데이터 담당 스크립트에게 가지고 있는 인덱스 목록을 넘겨줌
             GameManager.Instance.CallBattle();  //게임 매니저에게 배틀 호출 요청
             Debug.Log("충돌!");
         }

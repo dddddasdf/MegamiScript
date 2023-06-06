@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     private PartyMemberManager PartyManager;        //파티 담당자
 
     public SkillDatabaseManager SkillDBCaching;    //스킬 DB 스크립트
+    public EnemyDatabaseManager EnemyDBCaching;     //적 DB 스크립트
 
     #endregion
 
@@ -42,7 +43,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void InitDataFiles()
     {
-        EnemyData.InitEnemyData();   //몬스터 데이터 초기화
+        EnemyDBCaching.InitEnemyDatabaseManager();   //몬스터 데이터 초기화
         HelpTextData.InitHelpTextData();    //도움말 텍스트 데이터 초기화
         PlayerDataScript = new PlayerDataManager();
         PlayerDataScript.SetPlayerTmp();

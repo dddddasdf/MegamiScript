@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -16,14 +17,14 @@ public class SkillCellData : InfiniteScrollData
         Skillinfo = NewData;
     }
 
-    public SkillDataRec ReturnSkillInfo()
+    public SkillDataRec ReturnSkillDataRec()
     {
         return Skillinfo;
     }
 
-    public void SwapIsSelected(bool Swap)
+    public void SetIsSelected(bool Value)
     {
-        IsSelected = Swap;
+        IsSelected = Value;
     }
 
     public bool ReturnIsSelected()
@@ -51,6 +52,14 @@ public class BattleSkillMenuUI : MonoBehaviour
     private SkillCellData NowSelectedData = new SkillCellData();
     public InfiniteScroll VerticalISkillList = null;
 
+    public bool IsChanged;          //선택된 스킬이 바뀌었는지 배틀매니저와 정보 교환용
+
+    private Queue<Action> JobQueue = new Queue<Action>();      //순차적으로 진행시킬 작업 목록
+    public void AddJobQueueMethod(Action Method)
+    {
+        JobQueue.Enqueue(Method);
+        int i = 0;
+    }
 
     #endregion
 
@@ -61,6 +70,31 @@ public class BattleSkillMenuUI : MonoBehaviour
 
         NowSelectedSkillIndex = 0;
         SetDefaultSelectedSkillButton();
+    }
+
+    private void Start()
+    {
+        VerticalISkillList.AddSelectCallback((data) =>
+        {
+            if ((SkillCellData)data != NowSelectedData)
+            {
+                //원래 선택된 데이터와 새로 선택된 데이터가 같지 않을 경우
+                UpdateData((SkillCellData)data);
+                IsChanged = true;
+            }
+            else
+            {
+                //원래 선택된 데이터와 새로 선택된 데이터가 같을 경우
+                IsChanged = false;
+            }
+
+            while (JobQueue.Count > 0)
+            {
+                Action action = JobQueue.Dequeue();
+                action?.Invoke();
+            }
+            JobQueue.Clear();       //작업큐 비워주기
+        });
     }
 
     /// <summary>
@@ -84,7 +118,7 @@ public class BattleSkillMenuUI : MonoBehaviour
     /// 현재 행동턴인 캐릭터의 스킬 리스트 세팅, 행동턴 바뀔 때마다 한 번씩 호출한다(스킬 메뉴로 들어갈 때마다 호출하는 게 아니다)
     /// </summary>
     /// <param name="NowTurnCharacter">현재 행동 턴인 아군 캐릭터</param>
-    public void SetSkillList(OnBattleObject NowTurnCharacter)
+    public void SetSkillList(OnBattlePartyObject NowTurnCharacter)
     {
         if (ShowSkillList != null)
             ShowSkillList.Clear();      //스킬 데이터가 차 있을 경우 한 번 비워준다
@@ -102,16 +136,56 @@ public class BattleSkillMenuUI : MonoBehaviour
 
             if (i == 0)
             {
-                NewSkillCellData.SwapIsSelected(true);
+                NewSkillCellData.SetIsSelected(true);
                 NowSelectedData = NewSkillCellData;
             }
 
             ShowSkillList.Add(NewSkillCellData);
             VerticalISkillList.InsertData(NewSkillCellData);
         }
+
+        while (JobQueue.Count > 0)
+        {
+            Action action = JobQueue.Dequeue();
+            action?.Invoke();
+        }
+        JobQueue.Clear();       //작업큐 비워주기
+    }
+
+    /// <summary>
+    /// 스킬셀 업데이트
+    /// </summary>
+    /// <param name="NewSelectedData"></param>
+    private void UpdateData(SkillCellData NewSelectedData)
+    {
+        //NowSelectedData.
+        NowSelectedData.SetIsSelected(false); //원래 선택 중이던 아이템셀은 선택 해제
+        VerticalISkillList.UpdateData(NowSelectedData);   //선택 해제 업데이트
+        NowSelectedData = NewSelectedData;  //지금 선택 중인 셀 교체
+        NowSelectedData.SetIsSelected(true);  //선택 중 업데이트
+        VerticalISkillList.UpdateData(NowSelectedData);   //새로 선택된 셀 업데이트
     }
 
 
+    /// <summary>
+    /// 선택된 스킬이 바뀌었는지 배틀매니저에게 전달
+    /// </summary>
+    /// <param name="IsChanged"></param>
+    public void IsSkillChanged(out bool IsChanged)
+    {
+        IsChanged = this.IsChanged;
+    }
+
+
+    public SkillDataRec ReturnNowSelectedSkillData()
+    {
+        return NowSelectedData.ReturnSkillDataRec();
+    }
+
+
+
+
+    //아래로 레거시
 
     /// <summary>
     /// 스킬창 들어가면 기본적으로 활성화되는 스킬 버튼은 첫번째 스킬 - 알고리즘 갈아엎으면 삭제 예정

@@ -6,6 +6,9 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Newtonsoft.Json;
 
+/// <summary>
+/// init 기능 사용을 가능하게 해주는 단락. 지우지 말 것
+/// </summary>
 namespace System.Runtime.CompilerServices
 {
     internal static class IsExternalInit { }
@@ -125,24 +128,24 @@ public record SkillDataRec
     /// <param name="description"></param>
     /// <param name="addEffect"></param>
     /// <param name="effectValue"></param>
-    public SkillDataRec(SkillTypeSort skillType, int iD, int rank, string name, int useMP, WhichTarget target, NumberOfTarget? targetNuber, int minHits, int maxHits, int? power,
-        int accuracy, string description, EffectType? addEffect, int? effectValue)
-    {
-        SkillType = skillType;
-        ID = iD;
-        Rank = rank;
-        Name = name;
-        UseMP = useMP;
-        Target = target;
-        thisTargetNumber = targetNuber;
-        MinHits = minHits;
-        MaxHits = maxHits;
-        Power = power;
-        Accuracy = accuracy;
-        Description = description;
-        AddEffect = addEffect;
-        EffectValue = effectValue;
-    }
+    //public SkillDataRec(SkillTypeSort skillType, int iD, int rank, string name, int useMP, WhichTarget target, NumberOfTarget? targetNuber, int minHits, int maxHits, int? power,
+    //    int accuracy, string description, EffectType? addEffect, int? effectValue)
+    //{
+    //    SkillType = skillType;
+    //    ID = iD;
+    //    Rank = rank;
+    //    Name = name;
+    //    UseMP = useMP;
+    //    Target = target;
+    //    thisTargetNumber = targetNuber;
+    //    MinHits = minHits;
+    //    MaxHits = maxHits;
+    //    Power = power;
+    //    Accuracy = accuracy;
+    //    Description = description;
+    //    AddEffect = addEffect;
+    //    EffectValue = effectValue;
+    //}
 
     
     [JsonProperty] private SkillTypeSort SkillType { get; init; } //스킬 유형
@@ -231,6 +234,22 @@ public record SkillDataRec
     }
 }
 
+/// <summary>
+/// 유저와 몬스터는 대조에 필요한 최소한의 정보만 가지고 있게 한다
+/// </summary>
+[System.Serializable]
+[JsonObject(MemberSerialization.OptIn)]
+public record SimplifySkillDataRec
+{
+    private int ID { get; init; }
+    private string Name { get; init; }
+
+    /// <summary>
+    /// 악마 한정으로 기술이 필요한 곳(주인공은 null로 저장) 습득하기 위해 도달해야 하는 레벨
+    /// </summary>
+    private int? RequireLevel { get; init; }
+}
+
 
 public class SkillDatabaseManager
 {
@@ -247,8 +266,6 @@ public class SkillDatabaseManager
     /// </summary>
     public void InitSkillDatabaseManager()
     {
-        //LoadAttackSkillDatabase();
-        //LoadSkillDatabasse();
         LoadSkillRecDatabasse();
     }
 
@@ -271,7 +288,6 @@ public class SkillDatabaseManager
                 Action action = AfterInitJobQueue.Dequeue();
                 action?.Invoke();
             }
-
             AfterInitJobQueue = null;       //작업큐 비워주기
         };
     }

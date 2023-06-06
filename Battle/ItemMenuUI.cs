@@ -9,7 +9,17 @@ using UnityEngine.UI;
 public class ItemCellData : InfiniteScrollData
 {
     public UsableItemInformaiton ItemInfo;  //슬롯이 받아오게 될 소지 아이템 데이터
-    public bool IsSelected = false; //해당 슬롯 선택 되었는지 확인용
+    private bool IsSelected = false; //해당 슬롯 선택 되었는지 확인용
+    
+    public void SetIsSelected(bool Value)
+    {
+        IsSelected = Value;
+    }
+
+    public bool ReturnIsSelected()
+    {
+        return IsSelected;
+    }
 }
 
 public class ItemMenuUI : MonoBehaviour
@@ -33,11 +43,12 @@ public class ItemMenuUI : MonoBehaviour
         {
             if ((ItemCellData)data != NowSelectedData)
             {
+                //원래 선택된 데이터와 새로 선택된 데이터가 같지 않을 경우
                 UpdateData((ItemCellData)data);
             }
             else
             {
-
+                //원래 선택된 데이터와 새로 선택된 데이터가 같을 경우
             }
         });
     }
@@ -78,7 +89,7 @@ public class ItemMenuUI : MonoBehaviour
 
             if (i == 0)
             {
-                NewItemCellData.IsSelected = true;  //제일 첫번째가 선택됨
+                NewItemCellData.SetIsSelected(true);  //제일 첫번째가 선택됨
                 NowSelectedData = NewItemCellData;
             }
 
@@ -103,13 +114,14 @@ public class ItemMenuUI : MonoBehaviour
     {
         if (ShowInventoryList.Count <= 0)
         {
+            //아이템 개수가 0개: 보여줄 게 없으니 업뎃하지 않는다
             return;
         }
 
-        NowSelectedData.IsSelected = false; //원래 선택 중이던 아이템셀은 선택 해제
+        NowSelectedData.SetIsSelected(false); //원래 선택 중이던 아이템셀은 선택 해제
         VerticalItemList.UpdateData(NowSelectedData);   //선택 해제 업데이트
         NowSelectedData = NewSelectedData;  //지금 선택 중인 셀 교체
-        NowSelectedData.IsSelected = true;  //선택 중 업데이트
+        NowSelectedData.SetIsSelected(true);  //선택 중 업데이트
         VerticalItemList.UpdateData(NowSelectedData);   //새로 선택된 셀 업데이트
     }
 }

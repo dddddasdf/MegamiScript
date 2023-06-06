@@ -16,7 +16,7 @@ public class SkillSystem
     /// <param name="Target"></param>
     /// <param name="NormalAttackDamage"></param>
     /// <param name="IsSwordAttack">주인공은 통상 공격과 "총"통상 공격으로 나뉜다</param>
-    public void CalculatePlayerNormalAttackDamage(OnBattleObject User, OnBattleObject Target, bool IsSwordAttack,out int NormalAttackDamage)
+    public void CalculatePlayerNormalAttackDamage(OnBattlePartyObject User, OnBattlePartyObject Target, bool IsSwordAttack,out int NormalAttackDamage)
     {
         /*
         최소 데미지=(무기 위력+힘)/3(소수 점 이하 반올림)
@@ -49,7 +49,7 @@ public class SkillSystem
     /// <param name="User"></param>
     /// <param name="Target"></param>
     /// <param name="NormalAttackDamage"></param>
-    public void CalculateDemonNormalAttackDamage(OnBattleObject User, OnBattleObject Target, out int NormalAttackDamage)
+    public void CalculateDemonNormalAttackDamage(OnBattlePartyObject User, OnBattlePartyObject Target, out int NormalAttackDamage)
     {
         /*
         최소 데미지=(무기 위력+힘)/3(소수 점 이하 반올림)
@@ -104,7 +104,7 @@ public class SkillSystem
     /// <param name="User"></param>
     /// <param name="Target"></param>
     /// <param name="PhysicDamage"></param>
-    public void CalculatePhysicDamage(SkillDataRec UsedSkill, OnBattleObject User, OnBattleObject Target, out int PhysicDamage)
+    public void CalculatePhysicDamage(SkillDataRec UsedSkill, OnBattlePartyObject User, OnBattlePartyObject Target, out int PhysicDamage)
     {
         /*
         { (스킬 위력 + (힘 * 0.75 + 기 * 1.5) ) × 보조 계수 × 약점 보정 ÷ 평균 공격 횟수 + 스킬 + 보정 } + 난수(0~15)  (소수점 이하 잘라내기)
@@ -169,7 +169,7 @@ public class SkillSystem
     /// <param name="UsedSkill">사용한 스킬</param>
     /// <param name="User">사용자</param>
     /// <param name="MagicDamage">적용 대상</param>
-    public void CalculateMagicDamage(SkillDataRec UsedSkill, OnBattleObject User, OnBattleObject Target, out int MagicDamage)
+    public void CalculateMagicDamage(SkillDataRec UsedSkill, OnBattlePartyObject User, OnBattlePartyObject Target, out int MagicDamage)
     {
         /*
         { (스킬 위력 + 마 × 4.5 ) ÷ 3 × 보조 계수 × 약점 보정 ÷ 평균 공격 횟수 + 스킬 + 보정 } + 난수(0~15) (소수점 이하 잘라내기)

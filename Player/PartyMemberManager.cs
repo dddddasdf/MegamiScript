@@ -48,7 +48,7 @@ public enum SkillAffinities
 [Flags]
 public enum AilmentType
 {
-    [JsonProperty] None = 0   //상태이상 없음
+    None = 0   //상태이상 없음
 
     , Poison = 1 << 0    //독 - 전투에서 행동시 체력 감소, 필드에서 이동시 체력 감소/자동 회복X
     , Sick = 1 << 1      //감기 - 전투에서 공격력 25% 하락, 회피율 0%로 하락, 턴 종료마다 5%의 확률로 타 아군 캐릭터에게 감염/자동 회복X
@@ -115,9 +115,9 @@ public class PartyMemberData
     [JsonProperty] private SkillAffinities? AffinityLight { get; init; }
     [JsonProperty] private SkillAffinities? AffinityDark { get; init; }
 
-    [JsonProperty] private bool IsNormalGun = false; // { get; init; }        //일반 공격이 총속성일 경우 true, 그 외에는 false
-    [JsonProperty] private int NormalMinHit = 0; //{ get; init; }        //일반 공격의 최소 타수: 일부 악마를 제외하면 통상적으로는 1회
-    [JsonProperty] private int NormalMaxHit = 0; //{ get; init; }        //일반 공격의 최대 타수: 일부 악마를 제외하면 통상적으로는 1회
+    [JsonProperty] private bool IsNormalGun  { get; init; }        //일반 공격이 총속성일 경우 true, 그 외에는 false
+    [JsonProperty] private int NormalMinHit { get; init; }        //일반 공격의 최소 타수: 일부 악마를 제외하면 통상적으로는 1회
+    [JsonProperty] private int NormalMaxHit { get; init; }        //일반 공격의 최대 타수: 일부 악마를 제외하면 통상적으로는 1회
 
 
     #endregion
@@ -631,7 +631,7 @@ public class PartyMemberManager : IPartySubject
         {
             if (TextAssetHandle.Status == AsyncOperationStatus.Failed)
             {
-                int a = 100;
+
             }
 
             PartyDemonList = JsonConvert.DeserializeObject<List<PartyDemonData>>(TextAssetHandle.Result.text);
@@ -644,7 +644,7 @@ public class PartyMemberManager : IPartySubject
         {
             if (TextAssetHandle2.Status == AsyncOperationStatus.Failed)
             {
-                int b = 100;
+
             }
         
             PlayerCharacter = JsonConvert.DeserializeObject<PlayerCharacterData>(TextAssetHandle2.Result.text);
@@ -656,7 +656,6 @@ public class PartyMemberManager : IPartySubject
             }
         };
 
-        int i = 0;
     }
 
     private PlayerCharacterData PlayerCharacter;

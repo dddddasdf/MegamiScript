@@ -8,7 +8,7 @@ public class PartyUI : MonoBehaviour
 
     [SerializeField] private GameObject FirstMember;    //첫번째 파티 멤버의 게임 오브젝트
 
-    [SerializeField] private BattleMemberCell[] MemberScriptArray; //멤버 스크립트 배열
+    [SerializeField] private BattleMemberCell[] MemberCellArray; //멤버 스크립트 배열
 
 
     #endregion
@@ -23,11 +23,11 @@ public class PartyUI : MonoBehaviour
     /// 전투 돌입 후 파티 리스트가 세팅 되고 UI에 정보 보내주기
     /// </summary>
     /// <param name="NowOnBattleObject"></param>
-    public void InitPartyDisplay(List<OnBattleObject?> NowOnBattleObject)
+    public void InitPartyDisplay(List<OnBattlePartyObject?> NowOnBattleObject)
     {
         for (int i = 0; i < 4; i++)
         {
-            MemberScriptArray[i].SetMemberCell(NowOnBattleObject[i]);
+            MemberCellArray[i].SetMemberCell(NowOnBattleObject[i]);
         }
     }
 #nullable disable
@@ -36,9 +36,9 @@ public class PartyUI : MonoBehaviour
     /// 파티원 변동시 해당 슬롯 정보 갱신
     /// </summary>
     /// <param name="MemberNumber"></param>
-    public void CallSwapMember(int MemberNumber, OnBattleObject? TargetBattleObject)
+    public void CallSwapMember(int MemberNumber, OnBattlePartyObject? TargetBattleObject)
     {
-        MemberScriptArray[MemberNumber].SwapMemberData(TargetBattleObject);
+        MemberCellArray[MemberNumber].SwapMemberData(TargetBattleObject);
     }
 
 
@@ -49,7 +49,7 @@ public class PartyUI : MonoBehaviour
     /// <param name="RemainHP"></param>
     public void CallRefreshHPValue(int MemberNumber)
     {
-        MemberScriptArray[MemberNumber].RefreshHP();
+        MemberCellArray[MemberNumber].RefreshHP();
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public class PartyUI : MonoBehaviour
     /// <param name="RemainMP"></param>
     public void CallRefreshMPValue(int MemberNumber)
     {
-        MemberScriptArray[MemberNumber].RefreshMP();
+        MemberCellArray[MemberNumber].RefreshMP();
     }
 
     /// <summary>
@@ -68,12 +68,12 @@ public class PartyUI : MonoBehaviour
     /// <param name="MemberNumber"></param>
     public void ActiveTurn(int MemberNumber)
     {
-        MemberScriptArray[MemberNumber].NowTurn();
+        MemberCellArray[MemberNumber].NowTurn();
     }
     
     public void DeactiveTurn(int MemberNumber)
     {
-        MemberScriptArray[MemberNumber].EndTurn();
+        MemberCellArray[MemberNumber].EndTurn();
     }
 }
 
