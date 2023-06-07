@@ -58,7 +58,6 @@ public class BattleSkillMenuUI : MonoBehaviour
     public void AddJobQueueMethod(Action Method)
     {
         JobQueue.Enqueue(Method);
-        int i = 0;
     }
 
     #endregion

@@ -278,7 +278,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     /// </summary>
     private void CallSetSkillList()
     {
-        SkillUIScript.AddJobQueueMethod(() => CallShowAffinityMark());
+        //SkillUIScript.AddJobQueueMethod(() => CallShowAffinityMark());
         SkillUIScript.SetSkillList(NowOnBattlePartyList[PartyTurnOrderIndexList[0]]);
     }
 
@@ -291,7 +291,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     /// <summary>
     /// 적에게 상성 표시 마크 출력-최초로 스킬창에 들어갔을 경우
     /// </summary>
-    private void CallShowAffinityMark()
+    public void CallShowAffinityMark()
     {
         NowSelectedSkill = SkillUIScript.ReturnNowSelectedSkillData();
         EnemyCanvas.ShowAffinityMarkAll(NowSelectedSkill);
@@ -308,6 +308,14 @@ public class BattleManager : MonoBehaviour, IPartyObserver
 
         NowSelectedSkill = SkillUIScript.ReturnNowSelectedSkillData();
         EnemyCanvas.ShowAffinityMarkAll(NowSelectedSkill);
+    }
+
+    /// <summary>
+    /// 스킬 메뉴에서 뒤로가기를 누름->마크 상성 표시 종료
+    /// </summary>
+    public void CallHideAffinityMark()
+    {
+        EnemyCanvas.HideAffinityMarkAll();
     }
 
 

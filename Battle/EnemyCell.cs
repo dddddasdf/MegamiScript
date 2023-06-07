@@ -25,7 +25,7 @@ public class EnemyCell : MonoBehaviour
 
     private OnBattleEnemyObject thisCellEnemyData;
 
-    private CancellationTokenSource StopTaskToken = new CancellationTokenSource();      //마크 깜빡이게 하는 UniTask 중단용 토큰
+    //private CancellationTokenSource StopTaskToken = new CancellationTokenSource();      //마크 깜빡이게 하는 UniTask 중단용 토큰
 
     //아래로 마크 표시 관련 스프라이트
     [SerializeField] private Sprite[] MarkWeak = new Sprite[2];
@@ -120,28 +120,38 @@ public class EnemyCell : MonoBehaviour
     }
 
     public void TurnOnAffinityMark(SkillDataRec TargetSkill)
-    {
+    {    
         switch (thisCellEnemyData.ReturnAffinity(TargetSkill.ReturnSkillType()))
         {
             case SkillAffinities.Weak:
-                EnemyMark.enabled = true;
+                TaskWorkManage = true;
                 BlinkMark(MarkWeak).Forget();
+                EnemyMark.sprite = MarkWeak[0];
+                EnemyMark.enabled = true;
                 break;
             case SkillAffinities.Resist:
-                EnemyMark.enabled = true;
+                TaskWorkManage = true;
                 BlinkMark(MarkResist).Forget();
+                EnemyMark.sprite = MarkResist[0];
+                EnemyMark.enabled = true;
                 break;
             case SkillAffinities.Void:
-                EnemyMark.enabled = true;
+                TaskWorkManage = true;
                 BlinkMark(MarkVoid).Forget();
+                EnemyMark.sprite = MarkVoid[0];
+                EnemyMark.enabled = true;
                 break;
             case SkillAffinities.Reflect:
-                EnemyMark.enabled = true;
+                TaskWorkManage = true;
                 BlinkMark(MarkReflect).Forget();
+                EnemyMark.sprite = MarkReflect[0];
+                EnemyMark.enabled = true;
                 break;
             case SkillAffinities.Drain:
-                EnemyMark.enabled = true;
+                TaskWorkManage = true;
                 BlinkMark(MarkDrain).Forget();
+                EnemyMark.sprite = MarkDrain[0];
+                EnemyMark.enabled = true;
                 break;
             default:
                 //상성 없음
@@ -149,6 +159,15 @@ public class EnemyCell : MonoBehaviour
                 TaskWorkManage = false;
                 break;
         }
+    }
+
+    /// <summary>
+    /// 마크 표시 종료
+    /// </summary>
+    public void TurnOffAffinityMark()
+    {
+        TaskWorkManage = false;
+        EnemyMark.enabled = false;
     }
 
     public void Test_TurnOnMark()
@@ -171,14 +190,17 @@ public class EnemyCell : MonoBehaviour
     /// <returns></returns>
     private async UniTaskVoid BlinkMark(Sprite[] SwapMark)
     {
+        CancellationTokenSource StopTaskToken = new CancellationTokenSource();      //마크 깜빡이게 하는 UniTask 중단용 토큰
         int i = 0;
 
         while (TaskWorkManage)
         {
-            await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken:StopTaskToken.Token);   //1초마다 마크 교체
+            await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken: StopTaskToken.Token);   //1초마다 마크 교체
             i = (i + 1) % 2;
             EnemyMark.sprite = SwapMark[i];
-            Debug.Log("Task 동작 중");
         }
+
+        StopTaskToken.Cancel();
+        StopTaskToken.Dispose();
     }
 }

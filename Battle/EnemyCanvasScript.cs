@@ -81,4 +81,13 @@ public class EnemyCanvasScript : MonoBehaviour
             EnemyCellArray[i].TurnOnAffinityMark(TargetSkill);
         }
     }
+
+
+    public void HideAffinityMarkAll()
+    {
+        for (int i = 0; i < EnemyCellArray.Length; i++)
+        {
+            EnemyCellArray[i].TurnOffAffinityMark();
+        }
+    }
 }
