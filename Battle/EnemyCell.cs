@@ -15,10 +15,10 @@ public class EnemyCell : MonoBehaviour
     [SerializeField] private Transform thisTransform;   //사이즈 조절용
     [SerializeField] private Image EnemyVisualSprite;  //적의 비주얼 스프라이트
     [SerializeField] private Image EnemyMark;    //상성 마크 표시 이미지
+    [SerializeField] private TextMeshProUGUI LevelTMP;
+    [SerializeField] private TextMeshProUGUI TribeTMP;
     [SerializeField] private TextMeshProUGUI NameTMP;
     [SerializeField] private TextMeshProUGUI HPTMP;
-    [SerializeField] private TextMeshProUGUI TribeTMP;
-    [SerializeField] private TextMeshProUGUI LevelTMP;
     [SerializeField] private Slider HPBar;
 
     private StringBuilder SpriteNameSB = new StringBuilder(20); //스프라이트명용 StringBuilder
