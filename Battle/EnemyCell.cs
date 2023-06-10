@@ -15,13 +15,14 @@ public class EnemyCell : MonoBehaviour
     [SerializeField] private Transform thisTransform;   //사이즈 조절용
     [SerializeField] private Image EnemyVisualSprite;  //적의 비주얼 스프라이트
     [SerializeField] private Image EnemyMark;    //상성 마크 표시 이미지
+
+    [SerializeField] private Canvas InformationUICanvas;
     [SerializeField] private TextMeshProUGUI LevelTMP;
     [SerializeField] private TextMeshProUGUI TribeTMP;
     [SerializeField] private TextMeshProUGUI NameTMP;
     [SerializeField] private TextMeshProUGUI HPTMP;
     [SerializeField] private Slider HPBar;
 
-    private StringBuilder SpriteNameSB = new StringBuilder(20); //스프라이트명용 StringBuilder
 
     private OnBattleEnemyObject thisCellEnemyData;
 
@@ -36,8 +37,9 @@ public class EnemyCell : MonoBehaviour
     [SerializeField] private Sprite[] MarkUnknown = new Sprite[2];
     [SerializeField] private Sprite MarkScout;
 
-    private bool Test = false;
-    private bool TaskWorkManage = false;
+    private StringBuilder SpriteNameSB = new StringBuilder(20); //스프라이트명용 StringBuilder
+    
+    private bool TaskWorkManage = false;        //UniTask 동작 탈출용 변수
 
     private void Awake()
     {
@@ -79,7 +81,7 @@ public class EnemyCell : MonoBehaviour
     /// <summary>
     /// 이름, 종족, 레벨, 체력 정보 표시
     /// </summary>
-    public void ShowInformation()
+    public void SetInformation()
     {
         //여기 이름 설정 들어가고
         //여기 체력 설정 들어가고
@@ -88,36 +90,22 @@ public class EnemyCell : MonoBehaviour
     }
 
     /// <summary>
+    /// 몬스터가 타겟팅 되었을 때 세부 정보 띄워주기
+    /// </summary>
+    public void ShowInformation()
+    {
+        InformationUICanvas.enabled = true;
+    }
+
+    /// <summary>
     /// 정보 감추기
     /// </summary>
     public void HideInformation()
     {
-        //대충 정보 오브젝트들 모아둔 게임오브젝트 감춘단 내용 or TMP의 enable을 false로 바꿔서 출력을 중단한다거나.
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    private void SetMarkSpriteArray()
-    {
-
-    }
-
-    public void GetEnemyData()
-    {
-
+        InformationUICanvas.enabled = false;
     }
 
 
-    private void SetSpriteImage()
-    {
-
-    }
-
-    public void SetAffinitiesMark()
-    {
-
-    }
 
     public void TurnOnAffinityMark(SkillDataRec TargetSkill)
     {    
@@ -170,18 +158,6 @@ public class EnemyCell : MonoBehaviour
         EnemyMark.enabled = false;
     }
 
-    public void Test_TurnOnMark()
-    {
-        Test = !Test;
-        if (Test)
-        {
-            EnemyMark.sprite = MarkWeak[0];
-            EnemyMark.enabled = true;
-            BlinkMark(MarkWeak).Forget();
-        }
-        else
-            EnemyMark.enabled = false;
-    }
 
     /// <summary>
     /// 필요한 마크를 깜빡거리게 하는 메소드
@@ -191,7 +167,8 @@ public class EnemyCell : MonoBehaviour
     private async UniTaskVoid BlinkMark(Sprite[] SwapMark)
     {
         CancellationTokenSource StopTaskToken = new CancellationTokenSource();      //마크 깜빡이게 하는 UniTask 중단용 토큰
-        int i = 0;
+
+        int i = 0;      //배열 인덱스 변경용
 
         while (TaskWorkManage)
         {

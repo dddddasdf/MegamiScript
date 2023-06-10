@@ -67,7 +67,7 @@ public enum PressTurn
 
 public class BattleManager : MonoBehaviour, IPartyObserver
 {
-    #region SetVariables
+    #region SetField
 
     /// <summary>
     /// 테스트용 임시 변수
@@ -268,7 +268,8 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     }
     #endregion
 
-    #region Skill
+
+    #region UseSkill
 
     private bool IsChangedSkillCaching = false;
     private SkillDataRec NowSelectedSkill;
