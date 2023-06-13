@@ -26,7 +26,7 @@ public class EnemyCell : MonoBehaviour
 
     private OnBattleEnemyObject thisCellEnemyData;
 
-    //private CancellationTokenSource StopTaskToken = new CancellationTokenSource();      //마크 깜빡이게 하는 UniTask 중단용 토큰
+    private CancellationTokenSource StopTaskToken;      //마크 깜빡이게 하는 UniTask 중단용 토큰
 
     //아래로 마크 표시 관련 스프라이트
     [SerializeField] private Sprite[] MarkWeak = new Sprite[2];
@@ -41,16 +41,13 @@ public class EnemyCell : MonoBehaviour
     
     private bool TaskWorkManage = false;        //UniTask 동작 탈출용 변수
 
-    private void Awake()
-    {
-        
-
-    }
-
     private void OnDisable()
     {
-
-        
+        //if (!StopTaskToken.IsCancellationRequested)
+        //{
+        //    StopTaskToken.Cancel();
+        //    StopTaskToken.Dispose();
+        //}
     }
 
 
@@ -166,7 +163,7 @@ public class EnemyCell : MonoBehaviour
     /// <returns></returns>
     private async UniTaskVoid BlinkMark(Sprite[] SwapMark)
     {
-        CancellationTokenSource StopTaskToken = new CancellationTokenSource();      //마크 깜빡이게 하는 UniTask 중단용 토큰
+        StopTaskToken = new CancellationTokenSource();      //마크 깜빡이게 하는 UniTask 중단용 토큰
 
         int i = 0;      //배열 인덱스 변경용
 

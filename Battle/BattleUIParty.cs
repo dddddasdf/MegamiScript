@@ -2,11 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PartyUI : MonoBehaviour
+public partial class BattleUIManager : MonoBehaviour
 {
-    #region SetVariables
+    #region SetField
 
-    [SerializeField] private GameObject FirstMember;    //첫번째 파티 멤버의 게임 오브젝트
+    //↓왜 있는지 모르겠음 나중에 지우기
+    //[SerializeField] private GameObject FirstMember;    //첫번째 파티 멤버의 게임 오브젝트
 
     [SerializeField] private BattleMemberCell[] MemberCellArray; //멤버 스크립트 배열
 

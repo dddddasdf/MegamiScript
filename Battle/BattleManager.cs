@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Cysharp.Threading.Tasks;
+using UniRx;
+using UniRx.Triggers;
 
 //지금 악마 번호 꼬여있음 나중에 손 봐야 한다(혼선 없게)
 //포트레이트 넘버와 파티 넘버를 손 보는 방향으로(도트 스프라이트는 그대로 둔다. 데몬 엑셀파일이 만들어져 있으므로)
@@ -65,6 +68,23 @@ public enum PressTurn
     */
 }
 
+
+/// <summary>
+/// 현재 어떤 메뉴창에 진입한 건지 기록용
+/// </summary>
+public enum NowOnMenu
+{
+    Act,
+    SkillMenu,
+    ItemMenu,
+    Talk,
+    Change,
+    Escape,
+    Pass,
+    SkillSelected,
+    ItemSelected
+}
+
 public class BattleManager : MonoBehaviour, IPartyObserver
 {
     #region SetField
@@ -78,11 +98,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
 
     private List<MonsterData> BattleEnemyDataList;
 
-    [SerializeField] private BattleUI BattleUIScript;
-    [SerializeField] private PartyUI PartyUIScript;
-    [SerializeField] private TurnUI TurnUIScript;
-    [SerializeField] private BattleSkillMenuUI SkillUIScript;
-    [SerializeField] private EnemyCanvasScript EnemyCanvas;
+    [SerializeField] private BattleUIManager UIScript;
 
     
     private int PartyMemberNumber = 0;  //현재 전투에서 활동 가능한 아군 인원 수
@@ -122,6 +138,14 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     private OnBattlePartyObject NowSelectedSwapFrom;     //악마를 교체할 때 엔트리에서 교체 대상 아군 데이터를 담는 변수
     private PartyDemonData NowSelectedSwapTo;       //악마를 교체할 때 스톡에서 교체할 아군 데이터를 담는 변수
 
+    private Queue<Action> JobQueue = new Queue<Action>();      //순차적으로 진행시킬 작업 목록
+    public void AddJobQueueMethod(Action Method)
+    {
+        JobQueue.Enqueue(Method);
+    }
+
+    private Stack<NowOnMenu> OnMenuStack = new ();
+    private NowOnMenu PopMenu;
 
     #endregion
 
@@ -144,11 +168,12 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         //SetPlayerTurn();
 
         //아래는 현재 여기서 파티 리스트 초기화도 겸하고 있기 때문에 작업큐를 쓰는데, 실전에서는 사용할 필요가 없다 (즉 전투만 보는 테스트가 끝나면 큐 이용 지워라)
-        TestPMM.AddJobQueueMethod(()=> SetOnBattlePartyData());
-        TestPMM.AddJobQueueMethod(() => PartyUIScript.InitPartyDisplay(NowOnBattlePartyList));
+        TestPMM.AddJobQueueMethod(() => SetOnBattlePartyData());
+        //AddJobQueueMethod(() => UIScript.InitPartyDisplay(NowOnBattlePartyList));
+        //TestPMM.AddJobQueueMethod(() => UIScript.InitPartyDisplay(NowOnBattlePartyList));
         TestPMM.AddJobQueueMethod(() => SetPlayerPhase());
         TestEDM.AddJobQueueMethod(() => SetOnBattleEnemyData());
-        TestEDM.AddJobQueueMethod(() => EnemyCanvas.InitEnemyisplay(NowOnBattleEnemyList));
+        TestEDM.AddJobQueueMethod(() => UIScript.InitEnemyisplay(NowOnBattleEnemyList));
     }
 
 
@@ -164,6 +189,46 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     {
 
     }
+
+    private void Update()
+    {
+        if (Input.GetKey(KeyCode.X))
+        {
+            //뒤로 가기 버튼
+            CheckOnMenu();
+        }
+    }
+
+    /// <summary>
+    /// 뒤로가기 버튼을 누를 경우 이전 단계 메뉴로 돌아간다
+    /// </summary>
+    private void CheckOnMenu()
+    {
+        if (OnMenuStack.Count == 0)
+        {
+            //최상위 메뉴인 행동 단계 메뉴 상태인지 체크(스택이 비어 있다면 행동 단계 메뉴)
+            return;
+        }
+        
+        PopMenu = OnMenuStack.Pop();    //펼쳐진 메뉴 스택에서 현재 펼쳐진 메뉴를 pop
+
+        //pop된 메뉴에 따라 분기
+        switch (PopMenu)
+        {
+            case NowOnMenu.SkillMenu:
+                UIScript.HideSkillMenu();
+                UIScript.ShowActMenu();
+                break;
+            case NowOnMenu.SkillSelected:
+                break;
+            case NowOnMenu.ItemMenu:
+                UIScript.HideItemMenu();
+                UIScript.ShowActMenu();
+                break;
+        }
+    }
+
+
 
     #region SetBattleInfo
     private void SetOnBattleEnemyData()
@@ -245,31 +310,16 @@ public class BattleManager : MonoBehaviour, IPartyObserver
             }
         }
 
+        UIScript.InitPartyDisplay(NowOnBattlePartyList);
+
 
         //BattlePlayerData = GameManager.Instance.GetPlayerData();
-        //아래로는 안 쓴다 구조 변경 확정나면 지울 것.
-        //for (int i = 0; i < 4; i++)
-        //{
-        //    PartyMemberArray[i] = GameManager.Instance.GetPartyData(i); //전투 정보 저장용 배열에 파티의 정보를 받아옴
-        //
-        //    if (PartyMemberArray[i].IsEmptyMember)
-        //    {
-        //        PartyUIScript.SetEmptyMember(i);
-        //    }
-        //    else
-        //    {
-        //        PartyUIScript.SetUIText(i, PartyMemberArray[i].Name, PartyMemberArray[i].MaxHP, PartyMemberArray[i].MaxMP);
-        //        PartyUIScript.SetHPValue(i, PartyMemberArray[i].RemainHP);
-        //        PartyUIScript.SetMPValue(i, PartyMemberArray[i].RemainMP);
-        //
-        //        PartyMemberNumber++;    //활동 가능한 아군 인원 수 증가
-        //    }
-        //}
+
     }
     #endregion
 
 
-    #region UseSkill
+    #region Skill
 
     private bool IsChangedSkillCaching = false;
     private SkillDataRec NowSelectedSkill;
@@ -280,13 +330,13 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     private void CallSetSkillList()
     {
         //SkillUIScript.AddJobQueueMethod(() => CallShowAffinityMark());
-        SkillUIScript.SetSkillList(NowOnBattlePartyList[PartyTurnOrderIndexList[0]]);
+        UIScript.SetSkillList(NowOnBattlePartyList[PartyTurnOrderIndexList[0]]);
     }
 
     public void ClickedSkillCellButton()
     {
-        SkillUIScript.AddJobQueueMethod(() => SkillUIScript.IsSkillChanged(out IsChangedSkillCaching));
-        SkillUIScript.AddJobQueueMethod(() => CallShowAffinityMark(IsChangedSkillCaching));
+        UIScript.AddJobQueueMethod(() => UIScript.IsSkillChanged(out IsChangedSkillCaching));
+        UIScript.AddJobQueueMethod(() => CallShowAffinityMark(IsChangedSkillCaching));
     }
 
     /// <summary>
@@ -294,8 +344,12 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     /// </summary>
     public void CallShowAffinityMark()
     {
-        NowSelectedSkill = SkillUIScript.ReturnNowSelectedSkillData();
-        EnemyCanvas.ShowAffinityMarkAll(NowSelectedSkill);
+        if (!UIScript.ReturnIsButtonChanged())
+            return;
+
+        NowSelectedSkill = UIScript.ReturnNowSelectedSkillData();
+        UIScript.ShowAffinityMarkAll(NowSelectedSkill);
+        OnMenuStack.Push(NowOnMenu.SkillMenu);
     }
 
     /// <summary>
@@ -307,8 +361,8 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         if (!IsChangedSkillCaching)
             return;     //안 바뀌었으면 그대로 종료
 
-        NowSelectedSkill = SkillUIScript.ReturnNowSelectedSkillData();
-        EnemyCanvas.ShowAffinityMarkAll(NowSelectedSkill);
+        NowSelectedSkill = UIScript.ReturnNowSelectedSkillData();
+        UIScript.ShowAffinityMarkAll(NowSelectedSkill);
     }
 
     /// <summary>
@@ -316,7 +370,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     /// </summary>
     public void CallHideAffinityMark()
     {
-        EnemyCanvas.HideAffinityMarkAll();
+        UIScript.HideAffinityMarkAll();
     }
 
 
@@ -371,7 +425,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     /// </summary>
     private void SetPlayerPhase()
     {
-        TurnUIScript.PlacePlayerTurn(PartyMemberNumber);
+        UIScript.PlacePlayerTurn(PartyMemberNumber);
         IsPlayerPhase = true;
 
         if (PartyTurnOrderList.Count != 0)
@@ -395,7 +449,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         {
             NumberOfWholeTurn = NumberOfOnBattleParty;           //채워지는 온전한 턴 수 = 현재 생존 중인 파티 멤버수
             NumberOfHalfTurn = 0;                           //절반 턴 수 0으로 초기화
-            TurnUIScript.PlacePlayerTurn(NumberOfOnBattleParty);         //생존 중인 파티 멤버수만큼 턴 마크 표시
+            UIScript.PlacePlayerTurn(NumberOfOnBattleParty);         //생존 중인 파티 멤버수만큼 턴 마크 표시
         }
         else
         {
@@ -427,7 +481,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
             PartyTurnOrderIndexList.Sort((n1, n2) => NowOnBattlePartyList[n2].ReturnMemberData().ReturnAg().CompareTo(NowOnBattlePartyList[n1].ReturnMemberData().ReturnAg()));
         }
 
-        PartyUIScript.ActiveTurn(PartyTurnOrderIndexList[0]);        //현재 행동하게 되는 캐릭터의 턴 활성화 표시
+        UIScript.ActiveTurn(PartyTurnOrderIndexList[0]);        //현재 행동하게 되는 캐릭터의 턴 활성화 표시
         CallSetSkillList();
     }
 
@@ -468,7 +522,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
                     //턴 삭제 및 페이즈 전환 연출 함수 기입
                     //생각해보니 위엣것들 남은 턴이 전부 0 이하가 되면 페이즈 넘어가도록 액션 예약 걸어두면 되나?
 
-                    TurnUIScript.HideAllMark(IsPlayerPhase);        //모든 남은 턴 감추기
+                    UIScript.HideAllMark(IsPlayerPhase);        //모든 남은 턴 감추기
 
                     //if (IsPlayerPhase)
                     //    TurnUIScript.HideAllPlayerMark();
@@ -481,33 +535,33 @@ public class BattleManager : MonoBehaviour, IPartyObserver
                     if (NumberOfHalfTurn >= 2)
                     {
                         //온전한 턴 2턴 차감
-                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 2, IsPlayerPhase);       //절반 턴 2개 감추기
+                        UIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 2, IsPlayerPhase);       //절반 턴 2개 감추기
                         NumberOfHalfTurn -= 2;
                     }
                     else if (NumberOfHalfTurn == 1 && NumberOfWholeTurn >= 1)
                     {
-                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
+                        UIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
                         NumberOfHalfTurn -= 1;
-                        TurnUIScript.HideWholeTurnMark(NumberOfWholeTurn, 1, IsPlayerPhase);        //온전한 턴 1개 감추기
+                        UIScript.HideWholeTurnMark(NumberOfWholeTurn, 1, IsPlayerPhase);        //온전한 턴 1개 감추기
                         NumberOfWholeTurn -= 1;
                         NumberOfUsedTurn += 2;
                     }
                     else if (NumberOfHalfTurn == 1 && NumberOfWholeTurn == 0)
                     {
                         //현재 행동 턴수가 절반 턴 1개만 남아있다면 2개 차감이 사실상 전부 차감과 마찬가지
-                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
+                        UIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
                         NumberOfHalfTurn -= 1;
                     }
                     else if (NumberOfWholeTurn == 1)
                     {
                         //현재 행동 턴수가 온전한 턴 1개만 남아있다면 2개 차감이 사실상 전부 차감과 마찬가지
-                        TurnUIScript.HideWholeTurnMark(NumberOfWholeTurn, 1, IsPlayerPhase);        //온전한 턴 1개 감추기
+                        UIScript.HideWholeTurnMark(NumberOfWholeTurn, 1, IsPlayerPhase);        //온전한 턴 1개 감추기
                         NumberOfWholeTurn -= 1;
                         NumberOfUsedTurn += 1;
                     }
                     else
                     {
-                        TurnUIScript.HideWholeTurnMark(NumberOfWholeTurn, 2, IsPlayerPhase);        //온전한 턴 2개 감추기
+                        UIScript.HideWholeTurnMark(NumberOfWholeTurn, 2, IsPlayerPhase);        //온전한 턴 2개 감추기
                         NumberOfWholeTurn -= 2;
                         NumberOfUsedTurn += 2;
                     }
@@ -517,13 +571,13 @@ public class BattleManager : MonoBehaviour, IPartyObserver
                 {
                     if (NumberOfHalfTurn >= 1)
                     {
-                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
+                        UIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
                         NumberOfHalfTurn -= 1;
                         NumberOfUsedTurn += 1;
                     }
                     else
                     {
-                        TurnUIScript.HideWholeTurnMark(NumberOfWholeTurn, 1, IsPlayerPhase);        //온전한 턴 1개 감추기
+                        UIScript.HideWholeTurnMark(NumberOfWholeTurn, 1, IsPlayerPhase);        //온전한 턴 1개 감추기
                         NumberOfWholeTurn -= 1;
                         NumberOfUsedTurn += 1;
                     }
@@ -533,16 +587,16 @@ public class BattleManager : MonoBehaviour, IPartyObserver
                 {
                     if (NumberOfHalfTurn >= 1)
                     {
-                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
+                        UIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);      //절반 턴 1개 감추기
                         NumberOfHalfTurn -= 1;      //남아있는 절반 턴 1개 차감
                         NumberOfUsedTurn += 1;
                     }
                     else
                     {
                         if (IsPlayerPhase)
-                            TurnUIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleParty);       //절반 턴 1개 추가
+                            UIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleParty);       //절반 턴 1개 추가
                         else
-                            TurnUIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleEnemy);       //절반 턴 1개 추가
+                            UIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleEnemy);       //절반 턴 1개 추가
                         NumberOfWholeTurn -= 1;
                         NumberOfHalfTurn += 1;
                     }    
@@ -552,16 +606,16 @@ public class BattleManager : MonoBehaviour, IPartyObserver
                 {
                     if (NumberOfWholeTurn == 0 && NumberOfHalfTurn != 0)
                     {
-                        TurnUIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);
+                        UIScript.HideHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, 1, IsPlayerPhase);
                         NumberOfHalfTurn -= 1;
                         NumberOfUsedTurn += 1;
                     }
                     else
                     {
                         if (IsPlayerPhase)
-                            TurnUIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleParty);       //절반 턴 1개 추가
+                            UIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleParty);       //절반 턴 1개 추가
                         else
-                            TurnUIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleEnemy);       //절반 턴 1개 추가
+                            UIScript.PlaceHalfTurnMark(NumberOfWholeTurn, NumberOfHalfTurn, NumberOfUsedTurn, NumberOfOnBattleEnemy);       //절반 턴 1개 추가
                         NumberOfWholeTurn -= 1;
                         NumberOfHalfTurn += 1;
                     }
@@ -579,7 +633,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         {
             if (IsPlayerPhase)
             {
-                PartyUIScript.DeactiveTurn(PartyTurnOrderIndexList[0]);      //행동턴을 마친 캐릭터의 턴 완료 표시
+                UIScript.DeactiveTurn(PartyTurnOrderIndexList[0]);      //행동턴을 마친 캐릭터의 턴 완료 표시
                 PartyTurnOrderIndexList.RemoveAt(0);           //행동턴을 마친 캐릭터는 턴 대기열에서 빠진다
                 SetPartyTurnOrder();
             }

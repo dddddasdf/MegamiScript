@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyCanvasScript : MonoBehaviour
+public partial class BattleUIManager : MonoBehaviour
 {
     [SerializeField] private GameObject EnemySingle;    //단일 등장
     [SerializeField] private GameObject EnemyDuo;       //2체 등장
@@ -17,11 +17,6 @@ public class EnemyCanvasScript : MonoBehaviour
     /// 전투하는 적의 숫자에 따라 최종적으로 활용할 에너미셀을 받는 배열
     /// </summary>
     private EnemyCell[] EnemyCellArray;
-
-    private void Awake()
-    {
-        
-    }
 
 #nullable enable
     /// <summary>

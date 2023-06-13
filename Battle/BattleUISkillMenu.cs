@@ -33,7 +33,7 @@ public class SkillCellData : InfiniteScrollData
     }
 }
 
-public class BattleSkillMenuUI : MonoBehaviour
+public partial class BattleUIManager : MonoBehaviour
 {
     #region SetVariables
 
@@ -41,50 +41,44 @@ public class BattleSkillMenuUI : MonoBehaviour
     [SerializeField] private List<Button> SkillButton;
     private int NowSelectedSkillIndex;  //현재 선택 중인 스킬 버튼 인덱스: 키보드 입력용 및 저장용
 
-    //선택된 버튼 관련 변수
-    private Button NowSelectedButton;   //선택된 버튼 저장용
-    private Color SelectedSkillButtonColor; //선택된 스킬 버튼 색상+투명도
-    private Color UnselectedSkillButtonColor;   //선택되지 않은 스킬 버튼 색상+투명도
-
-    private int ShowNumberofSkill;  //캐릭터가 습득하고 있는 스킬수-해당 수에 맞춰서 슬롯 출력
 
     private List<SkillCellData> ShowSkillList = new List<SkillCellData>();        //UI에서 보여주기 위한 스킬 데이터
-    private SkillCellData NowSelectedData = new SkillCellData();
+    private SkillCellData NowSelectedSkillData = new SkillCellData();
     public InfiniteScroll VerticalISkillList = null;
 
-    public bool IsChanged;          //선택된 스킬이 바뀌었는지 배틀매니저와 정보 교환용
+    public bool IsSelectedSkillChanged;          //선택된 스킬이 바뀌었는지 배틀매니저와 정보 교환용
 
-    private Queue<Action> JobQueue = new Queue<Action>();      //순차적으로 진행시킬 작업 목록
-    public void AddJobQueueMethod(Action Method)
-    {
-        JobQueue.Enqueue(Method);
-    }
+    
 
     #endregion
 
-    private void Awake()
+    /// <summary>
+    /// 스킬 UI 초기화
+    /// </summary>
+    private void InitSkillUI()
     {
-        SelectedSkillButtonColor = new Color(0 / 255f, 0 / 255f, 0 / 255f, 255 / 255f);
-        UnselectedSkillButtonColor = new Color(255 / 255f, 255 / 255f, 255 / 255f, 100 / 255f);
 
         NowSelectedSkillIndex = 0;
-        SetDefaultSelectedSkillButton();
+        //SetDefaultSelectedSkillButton();
     }
 
-    private void Start()
+    /// <summary>
+    /// 스킬 스크롤 세팅
+    /// </summary>
+    private void SetSkillScroll()
     {
         VerticalISkillList.AddSelectCallback((data) =>
         {
-            if ((SkillCellData)data != NowSelectedData)
+            if ((SkillCellData)data != NowSelectedSkillData)
             {
                 //원래 선택된 데이터와 새로 선택된 데이터가 같지 않을 경우
                 UpdateData((SkillCellData)data);
-                IsChanged = true;
+                IsSelectedSkillChanged = true;
             }
             else
             {
                 //원래 선택된 데이터와 새로 선택된 데이터가 같을 경우
-                IsChanged = false;
+                IsSelectedSkillChanged = false;
             }
 
             while (JobQueue.Count > 0)
@@ -136,7 +130,7 @@ public class BattleSkillMenuUI : MonoBehaviour
             if (i == 0)
             {
                 NewSkillCellData.SetIsSelected(true);
-                NowSelectedData = NewSkillCellData;
+                NowSelectedSkillData = NewSkillCellData;
             }
 
             ShowSkillList.Add(NewSkillCellData);
@@ -158,11 +152,11 @@ public class BattleSkillMenuUI : MonoBehaviour
     private void UpdateData(SkillCellData NewSelectedData)
     {
         //NowSelectedData.
-        NowSelectedData.SetIsSelected(false); //원래 선택 중이던 아이템셀은 선택 해제
-        VerticalISkillList.UpdateData(NowSelectedData);   //선택 해제 업데이트
-        NowSelectedData = NewSelectedData;  //지금 선택 중인 셀 교체
-        NowSelectedData.SetIsSelected(true);  //선택 중 업데이트
-        VerticalISkillList.UpdateData(NowSelectedData);   //새로 선택된 셀 업데이트
+        NowSelectedSkillData.SetIsSelected(false); //원래 선택 중이던 아이템셀은 선택 해제
+        VerticalISkillList.UpdateData(NowSelectedSkillData);   //선택 해제 업데이트
+        NowSelectedSkillData = NewSelectedData;  //지금 선택 중인 셀 교체
+        NowSelectedSkillData.SetIsSelected(true);  //선택 중 업데이트
+        VerticalISkillList.UpdateData(NowSelectedSkillData);   //새로 선택된 셀 업데이트
     }
 
 
@@ -172,50 +166,12 @@ public class BattleSkillMenuUI : MonoBehaviour
     /// <param name="IsChanged"></param>
     public void IsSkillChanged(out bool IsChanged)
     {
-        IsChanged = this.IsChanged;
+        IsChanged = this.IsSelectedSkillChanged;
     }
 
 
     public SkillDataRec ReturnNowSelectedSkillData()
     {
-        return NowSelectedData.ReturnSkillDataRec();
-    }
-
-
-
-
-    //아래로 레거시
-
-    /// <summary>
-    /// 스킬창 들어가면 기본적으로 활성화되는 스킬 버튼은 첫번째 스킬 - 알고리즘 갈아엎으면 삭제 예정
-    /// </summary>
-    private void SetDefaultSelectedSkillButton()
-    {
-        NowSelectedButton = SkillButton[NowSelectedSkillIndex];
-        NowSelectedButton.image.color = SelectedSkillButtonColor;
-    }
-
-    public void ClickSkillButton()
-    {
-        Button Tmp = EventSystem.current.currentSelectedGameObject.GetComponent<Button>();  //클릭된 버튼 임시로 가져오기
-
-        if (NowSelectedButton == Tmp)
-        {
-            //현재 활성화된 버튼과 유저가 클릭한 버튼이 일치시 취할 행동
-            CompareWhichSkillButtonClicked(Tmp);
-        }
-        else
-        {
-            //일치하지 않으면 활성화된 버튼을 스왑함
-            NowSelectedButton.image.color = UnselectedSkillButtonColor;
-            NowSelectedButton = Tmp;
-            Tmp.image.color = SelectedSkillButtonColor;
-            NowSelectedSkillIndex = int.Parse(Regex.Replace(Tmp.name, @"[^0-9]", ""));
-        }
-    }
-
-    private void CompareWhichSkillButtonClicked(Button Tmp)
-    {
-        string TmpButtonName = Tmp.name;
+        return NowSelectedSkillData.ReturnSkillDataRec();
     }
 }

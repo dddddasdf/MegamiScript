@@ -4,16 +4,16 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class TurnUI : MonoBehaviour
+public partial class BattleUIManager : MonoBehaviour
 {
     [SerializeField] private Image[] PlayerWholeTurnMark;    //플레이어 온전한 턴 마크
     [SerializeField] private Image[] EnemyWholeTurnMark;     //적 온전한 턴 마크
-    [SerializeField] private Image[] EnemyHalfTurnMark;     //적 절반 턴 마크
     [SerializeField] private Image[] HalfTurnMark;    //플레이어 절반 턴 마크
     [SerializeField] private TextMeshProUGUI TurnText;      //누구의 턴인지 표기하는 텍스트
 
 
-    private void Awake()
+    
+    private void InitTurnUI()
     {
         //배틀씬이 켜질 때 턴 마크가 켜져있는 걸 막기 위하여 한 번 더 렌더러를 꺼주는 작업
         for (int i = 0; i < PlayerWholeTurnMark.Length; i++)

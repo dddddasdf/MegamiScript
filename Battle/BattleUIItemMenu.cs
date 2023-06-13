@@ -22,7 +22,7 @@ public class ItemCellData : InfiniteScrollData
     }
 }
 
-public class ItemMenuUI : MonoBehaviour
+public partial class BattleUIManager : MonoBehaviour
 {
     [SerializeField] private Canvas SelectItemMenuCanvas;    
     private List<ItemCellData> ShowInventoryList = new List<ItemCellData>();        //UI에서 보여주기 위한 인벤토리 데이터
@@ -30,18 +30,13 @@ public class ItemMenuUI : MonoBehaviour
     public InfiniteScroll VerticalItemList = null;
 
     private int Count = 1;  //테스트 하드코딩용
-    private ItemCellData NowSelectedData = new ItemCellData();  //현재 선택된 데이터
+    private ItemCellData NowSelectedItemData = new ItemCellData();  //현재 선택된 데이터
 
-    private void Awake()
-    {
-        InsertItemData();
-    }
-
-    private void Start()
+    private void SetItemScroll()
     {
         VerticalItemList.AddSelectCallback((data) =>
         {
-            if ((ItemCellData)data != NowSelectedData)
+            if ((ItemCellData)data != NowSelectedItemData)
             {
                 //원래 선택된 데이터와 새로 선택된 데이터가 같지 않을 경우
                 UpdateData((ItemCellData)data);
@@ -90,7 +85,7 @@ public class ItemMenuUI : MonoBehaviour
             if (i == 0)
             {
                 NewItemCellData.SetIsSelected(true);  //제일 첫번째가 선택됨
-                NowSelectedData = NewItemCellData;
+                NowSelectedItemData = NewItemCellData;
             }
 
             ShowInventoryList.Add(NewItemCellData);
@@ -118,10 +113,10 @@ public class ItemMenuUI : MonoBehaviour
             return;
         }
 
-        NowSelectedData.SetIsSelected(false); //원래 선택 중이던 아이템셀은 선택 해제
-        VerticalItemList.UpdateData(NowSelectedData);   //선택 해제 업데이트
-        NowSelectedData = NewSelectedData;  //지금 선택 중인 셀 교체
-        NowSelectedData.SetIsSelected(true);  //선택 중 업데이트
-        VerticalItemList.UpdateData(NowSelectedData);   //새로 선택된 셀 업데이트
+        NowSelectedItemData.SetIsSelected(false); //원래 선택 중이던 아이템셀은 선택 해제
+        VerticalItemList.UpdateData(NowSelectedItemData);   //선택 해제 업데이트
+        NowSelectedItemData = NewSelectedData;  //지금 선택 중인 셀 교체
+        NowSelectedItemData.SetIsSelected(true);  //선택 중 업데이트
+        VerticalItemList.UpdateData(NowSelectedItemData);   //새로 선택된 셀 업데이트
     }
 }

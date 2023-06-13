@@ -10,7 +10,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class BattleMemberCell : MonoBehaviour
 {
-    #region SetVariables
+    #region MemberField
 
     [SerializeField] private GameObject MemberInfo;  //빈 멤버가 아닐 경우 출력하는 정보값들의 집합
     [SerializeField] private Image Frame;  //파티 프레임
@@ -38,15 +38,7 @@ public class BattleMemberCell : MonoBehaviour
 
     #endregion
 
-    #region DataField
 
-
-    #endregion
-
-    private void Awake()
-    {
-
-    }
 
     private void OnDisable()
     {
