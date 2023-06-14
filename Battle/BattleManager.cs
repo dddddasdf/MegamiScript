@@ -190,45 +190,6 @@ public class BattleManager : MonoBehaviour, IPartyObserver
 
     }
 
-    private void Update()
-    {
-        if (Input.GetKey(KeyCode.X))
-        {
-            //뒤로 가기 버튼
-            CheckOnMenu();
-        }
-    }
-
-    /// <summary>
-    /// 뒤로가기 버튼을 누를 경우 이전 단계 메뉴로 돌아간다
-    /// </summary>
-    private void CheckOnMenu()
-    {
-        if (OnMenuStack.Count == 0)
-        {
-            //최상위 메뉴인 행동 단계 메뉴 상태인지 체크(스택이 비어 있다면 행동 단계 메뉴)
-            return;
-        }
-        
-        PopMenu = OnMenuStack.Pop();    //펼쳐진 메뉴 스택에서 현재 펼쳐진 메뉴를 pop
-
-        //pop된 메뉴에 따라 분기
-        switch (PopMenu)
-        {
-            case NowOnMenu.SkillMenu:
-                UIScript.HideSkillMenu();
-                UIScript.ShowActMenu();
-                break;
-            case NowOnMenu.SkillSelected:
-                break;
-            case NowOnMenu.ItemMenu:
-                UIScript.HideItemMenu();
-                UIScript.ShowActMenu();
-                break;
-        }
-    }
-
-
 
     #region SetBattleInfo
     private void SetOnBattleEnemyData()
@@ -325,52 +286,12 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     private SkillDataRec NowSelectedSkill;
 
     /// <summary>
-    /// 현재 행동턴인 캐릭터의 스킬 데이터 전달
+    /// 현재 행동턴인 캐릭터의 스킬 데이터 전달해서 UI가 표시할 수 있게 한다
     /// </summary>
     private void CallSetSkillList()
     {
         //SkillUIScript.AddJobQueueMethod(() => CallShowAffinityMark());
         UIScript.SetSkillList(NowOnBattlePartyList[PartyTurnOrderIndexList[0]]);
-    }
-
-    public void ClickedSkillCellButton()
-    {
-        UIScript.AddJobQueueMethod(() => UIScript.IsSkillChanged(out IsChangedSkillCaching));
-        UIScript.AddJobQueueMethod(() => CallShowAffinityMark(IsChangedSkillCaching));
-    }
-
-    /// <summary>
-    /// 적에게 상성 표시 마크 출력-최초로 스킬창에 들어갔을 경우
-    /// </summary>
-    public void CallShowAffinityMark()
-    {
-        if (!UIScript.ReturnIsButtonChanged())
-            return;
-
-        NowSelectedSkill = UIScript.ReturnNowSelectedSkillData();
-        UIScript.ShowAffinityMarkAll(NowSelectedSkill);
-        OnMenuStack.Push(NowOnMenu.SkillMenu);
-    }
-
-    /// <summary>
-    /// 적에게 상성 표시 마크 출력-선택된 스킬이 바뀌었을 경우
-    /// </summary>
-    /// <param name="IsChanged"></param>
-    private void CallShowAffinityMark(bool IsChanged)
-    {
-        if (!IsChangedSkillCaching)
-            return;     //안 바뀌었으면 그대로 종료
-
-        NowSelectedSkill = UIScript.ReturnNowSelectedSkillData();
-        UIScript.ShowAffinityMarkAll(NowSelectedSkill);
-    }
-
-    /// <summary>
-    /// 스킬 메뉴에서 뒤로가기를 누름->마크 상성 표시 종료
-    /// </summary>
-    public void CallHideAffinityMark()
-    {
-        UIScript.HideAffinityMarkAll();
     }
 
 
@@ -465,7 +386,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     /// </summary>
     private void SetPartyTurnOrder()
     {
-        //턴 순서 대기열이 비어있다면 속도에 따라 턴 순서 배정
+        //턴 순서 대기열이 비어있다면 속도에 따라 턴 순서 배정해서 리스트를 채워준다
         if (PartyTurnOrderIndexList.Count == 0)
         {
             for (int i = 0; i < NowOnBattlePartyList.Count; i++)

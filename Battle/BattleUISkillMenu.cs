@@ -73,6 +73,7 @@ public partial class BattleUIManager : MonoBehaviour
             {
                 //원래 선택된 데이터와 새로 선택된 데이터가 같지 않을 경우
                 UpdateData((SkillCellData)data);
+                ShowAffinityMarkAll(NowSelectedSkillData.ReturnSkillDataRec());         //스킬 데이터가 갱신되었으니 상성 표시 마크도 갱신
                 IsSelectedSkillChanged = true;
             }
             else
@@ -151,7 +152,6 @@ public partial class BattleUIManager : MonoBehaviour
     /// <param name="NewSelectedData"></param>
     private void UpdateData(SkillCellData NewSelectedData)
     {
-        //NowSelectedData.
         NowSelectedSkillData.SetIsSelected(false); //원래 선택 중이던 아이템셀은 선택 해제
         VerticalISkillList.UpdateData(NowSelectedSkillData);   //선택 해제 업데이트
         NowSelectedSkillData = NewSelectedData;  //지금 선택 중인 셀 교체

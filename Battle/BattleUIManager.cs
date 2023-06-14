@@ -33,9 +33,8 @@ public partial class BattleUIManager : MonoBehaviour
     public bool IsSelectedChanged = false;
     private NowOnMenu NowSelectedMenu;
 
-
-    //키입력 관련 변수
-    //private bool IsCanInput;    //유저의 키입력을 현재 받을지 말지 결정-연출 동안 유저의 키 입력을 아예 받을지 말지 일단 확인용... 쓸데없는 오작동은 막는 게 좋다
+    private Stack<NowOnMenu> OnMenuStack = new();
+    private NowOnMenu PopMenu;
 
     private Queue<Action> JobQueue = new Queue<Action>();      //순차적으로 진행시킬 작업 목록
     public void AddJobQueueMethod(Action Method)
@@ -86,10 +85,44 @@ public partial class BattleUIManager : MonoBehaviour
         SetDefaultSelectedActMenuButton();
     }
 
-    //private void Update()
-    //{
-    //    //GetKeyboardInput();
-    //}
+    private void Update()
+    {
+        if (Input.GetKey(KeyCode.X))
+        {
+            //뒤로 가기 버튼
+            CheckOnMenu();
+        }
+    }
+
+    /// <summary>
+    /// 뒤로가기 버튼을 누를 경우 이전 단계 메뉴로 돌아간다
+    /// </summary>
+    private void CheckOnMenu()
+    {
+        if (OnMenuStack.Count == 0)
+        {
+            //최상위 메뉴인 행동 단계 메뉴 상태인지 체크(스택이 비어 있다면 행동 단계 메뉴)
+            return;
+        }
+
+        PopMenu = OnMenuStack.Pop();    //펼쳐진 메뉴 스택에서 현재 펼쳐진 메뉴를 pop
+
+        //pop된 메뉴에 따라 분기
+        switch (PopMenu)
+        {
+            case NowOnMenu.SkillMenu:
+                HideSkillMenu();
+                HideAffinityMarkAll();      //상성 표시 마크 감추기
+                SelectActMenuCanvas.enabled = true;
+                break;
+            case NowOnMenu.SkillSelected:
+                break;
+            case NowOnMenu.ItemMenu:
+                HideItemMenu();
+                SelectActMenuCanvas.enabled = true;
+                break;
+        }
+    }
 
     /// <summary>
     /// 메뉴를 처음 열면 가장 기본적으로 선택되는 버튼은 스킬
@@ -138,7 +171,7 @@ public partial class BattleUIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 어떤 버튼이 클릭 되었는지 대조
+    /// 어떤 버튼이 더블 클릭 되었는지 대조
     /// </summary>
     /// <param name="Tmp">지금 눌린 버튼</param>
     private void CompareWhichActButtonClicked(Button Tmp)
@@ -151,12 +184,14 @@ public partial class BattleUIManager : MonoBehaviour
         switch (TmpButtonName)
         {
             case "SkillMenuButton":
-                ShowSkillMenu();
+                ShowSkillMenu();        //스킬 선택 메뉴 진입
                 NowSelectedMenu = NowOnMenu.SkillMenu;
+                ShowAffinityMarkAll(NowSelectedSkillData.ReturnSkillDataRec());
+                OnMenuStack.Push(NowOnMenu.SkillMenu);      //열린 메뉴 스택에 스킬 메뉴 push
                 break;
             case "ItemMenuButton":
                 ShowItemMenu();
-                NowSelectedMenu = NowOnMenu.ItemMenu;
+                OnMenuStack.Push(NowOnMenu.ItemMenu);      //열린 메뉴 스택에 아이템 메뉴 push
                 break;
             case "TalkMenuButton":
                 break;
