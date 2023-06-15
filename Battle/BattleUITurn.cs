@@ -10,7 +10,7 @@ public partial class BattleUIManager : MonoBehaviour
     [SerializeField] private Image[] EnemyWholeTurnMark;     //적 온전한 턴 마크
     [SerializeField] private Image[] HalfTurnMark;    //플레이어 절반 턴 마크
     [SerializeField] private TextMeshProUGUI TurnText;      //누구의 턴인지 표기하는 텍스트
-
+    [SerializeField] private HalfMarkAnimationScript[] HalfMarkTurnArray;
 
     
     private void InitTurnUI()
@@ -93,18 +93,26 @@ public partial class BattleUIManager : MonoBehaviour
     {
         if (NumberOfRemainHalfTurn == 0)
         {
-            HalfTurnMark[NumberOfRemainTurn - 1].enabled = true;
-            //남아있는 온전한 턴수의 인덱스를 절반 턴수의 인덱스로 치환한다고 생각하면... 편하다...
+            //절반턴이 없으면 가장 바깥턴을 절반턴으로 변경
+            //HalfTurnMark[NumberOfRemainTurn - 1].enabled = true;
+            HalfMarkTurnArray[NumberOfRemainTurn - 1].AppearHalfMarkAnime();
         }
         else
         {
+            //남아있는 온전한 턴수의 인덱스를 절반 턴수의 인덱스로 치환한다고 생각하면... 편하다...
             for (int i = (NumberOfOnBattle - NumberOfUsedTurn - 1); i >= 0; i--)
             {
-                if (HalfTurnMark[i].enabled == false)
+                if (HalfMarkTurnArray[i].ReturnIsMarkAppeared() == false)
                 {
-                    HalfTurnMark[i].enabled = true;
+                    HalfMarkTurnArray[i].AppearHalfMarkAnime();
                     break;
                 }
+                
+                //if (HalfTurnMark[i].enabled == false)
+                //{
+                //    HalfTurnMark[i].enabled = true;
+                //    break;
+                //}
             }
         }
     }
@@ -119,7 +127,10 @@ public partial class BattleUIManager : MonoBehaviour
     {
         if (NumberOfUsedHalfTurn == 1)
         {
-            HalfTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 1].enabled = false;
+            //절반턴 1개 소모시
+            
+            //HalfTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 1].enabled = false;
+            HalfMarkTurnArray[NumberOfRemainTurn + NumberOfHalfTurn - 1].DisappearHalfMarkAnime();
 
             if (IsPlayerTurn)
             {
@@ -132,8 +143,13 @@ public partial class BattleUIManager : MonoBehaviour
         }
         else if (NumberOfUsedHalfTurn == 2)
         {
-            HalfTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 1].enabled = false;
-            HalfTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 2].enabled = false;
+            //절반턴 2개 소모시
+            
+            //HalfTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 1].enabled = false;
+            //HalfTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 2].enabled = false;
+
+            HalfMarkTurnArray[NumberOfRemainTurn + NumberOfHalfTurn - 1].DisappearHalfMarkAnime();
+            HalfMarkTurnArray[NumberOfRemainTurn + NumberOfHalfTurn - 2].DisappearHalfMarkAnime();
 
             if (IsPlayerTurn)
             {

@@ -565,7 +565,13 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         }
     }
 
-
+    /// <summary>
+    /// 턴스킵 버튼
+    /// </summary>
+    public void PressTrunSkip()
+    {
+        ReduceTurn(PressTurn.ReduceHalfTurn_Party);
+    }
 
     //아래로 턴 넘기기 동작 체크용 함수들 - 삭제 예정
     public void TestOne()
