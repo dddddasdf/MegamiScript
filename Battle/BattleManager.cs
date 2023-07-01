@@ -128,7 +128,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     private List<int> EnemyTurnOrderList = new List<int>();
     private int NumberOfOnBattleEnemy = 0;          //현재 생존해서 전투 중인 적의 수
 
-    private int MaxNumberOfEntry = 4;       //한 번에 엔트리에 들어오는 멤버 수는 넷-초기화할 때 크기 지정용
+    private const int MaxNumberOfEntry = 4;       //한 번에 엔트리에 들어오는 멤버 수는 넷-초기화할 때 크기 지정용
     /*
     아군 행동순서 배정: 엔트리의 상단(좌측)에 있을수록 먼저 행동한다 (진여5의 시스템과 동일)
     
@@ -139,6 +139,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     private PartyDemonData NowSelectedSwapTo;       //악마를 교체할 때 스톡에서 교체할 아군 데이터를 담는 변수
 
     private Queue<Action> JobQueue = new Queue<Action>();      //순차적으로 진행시킬 작업 목록
+    
     public void AddJobQueueMethod(Action Method)
     {
         JobQueue.Enqueue(Method);
@@ -146,6 +147,8 @@ public class BattleManager : MonoBehaviour, IPartyObserver
 
     private Stack<NowOnMenu> OnMenuStack = new ();
     private NowOnMenu PopMenu;
+
+    public static SkillCellData SelectedSkillDataBuffer = new();    //선택된 스킬 정보 저장용
 
     #endregion
 
@@ -298,17 +301,31 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     /// <summary>
     /// 스킬 선택창에서 현재 버튼이 활성화 된 스킬에 따라 적에게 마크 표시하라고 하는 함수
     /// </summary>
-    public void CheckNowActivatedSkillMark()
+    public void NowActivatedSkillMark()
     {
+        if (!UIScript.ReturnIsButtonDoubleClicked())
+        {
+            return;         //같은 스킬 버튼이 더블클릭된 게 아니면 다음 단계로 넘어가지 않는다
+        }
+
+        UIScript.ShowEnemyTargetSelectUI();     //고른 스킬이 무엇인지 띄워주는 화면 호출
+        UIScript.ResetIsButtonChanged();        //더블 클릭 감지용 변수 원상복구
         
     }
 
     /// <summary>
-    /// 현재 고른 스킬이 최종적으로 타격할 적에게 마크 표시하라고 하는 함수
+    /// 현재 고른 스킬이  최종적으로 타격할 적에게 마크 표시하라고 하는 함수
     /// </summary>
     public void CheckSelectedSkillMark()
     {
+        if (SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnNumberOfTarget() == NumberOfTarget.Single)
+        {
 
+        }
+        else
+        {
+
+        }
     }
 
 
@@ -565,12 +582,17 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         }
     }
 
+
     /// <summary>
-    /// 턴스킵 버튼
+    /// 턴스킵 버튼을 누름
     /// </summary>
     public void PressTrunSkip()
     {
-        ReduceTurn(PressTurn.ReduceHalfTurn_Party);
+        if (UIScript.ReturnIsButtonDoubleClicked())
+        {
+            ReduceTurn(PressTurn.ReduceHalfTurn_Party);
+            UIScript.ResetIsButtonChanged();
+        }
     }
 
     //아래로 턴 넘기기 동작 체크용 함수들 - 삭제 예정

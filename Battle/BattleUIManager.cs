@@ -28,13 +28,14 @@ public partial class BattleUIManager : MonoBehaviour
     private int ShowNumberofSkill;  //캐릭터가 습득하고 있는 스킬수-해당 수에 맞춰서 슬롯 출력
 
     /// <summary>
-    /// 버튼 더블클릭 감지용
+    /// 버튼 더블클릭 감지용-배틀매니저와 연계가 필요할 때만 사용/배틀매니저가 사용하고 나면 반드시 리셋 함수 호출
     /// </summary>
-    public bool IsSelectedChanged = false;
+    private bool IsButtonDoubleclicked = false;
     private NowOnMenu NowSelectedMenu;
 
     private Stack<NowOnMenu> OnMenuStack = new();
     private NowOnMenu PopMenu;
+    private bool IsGetKeyOK = true;         //화면 전환 애니메이션 중에는 X키 입력 감지 불가능 용으로: 개발 단계 에서는 상시 true로 해두고 애니메이션이 도입되면 온오프 할 수 있게 한다
 
     private Queue<Action> JobQueue = new Queue<Action>();      //순차적으로 진행시킬 작업 목록
     public void AddJobQueueMethod(Action Method)
@@ -87,17 +88,17 @@ public partial class BattleUIManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKey(KeyCode.X))
+        if (Input.GetKeyDown(KeyCode.X) && IsGetKeyOK)
         {
             //뒤로 가기 버튼
-            CheckOnMenu();
+            GoBackPreviousMenu();
         }
     }
 
     /// <summary>
     /// 뒤로가기 버튼을 누를 경우 이전 단계 메뉴로 돌아간다
     /// </summary>
-    private void CheckOnMenu()
+    private void GoBackPreviousMenu()
     {
         if (OnMenuStack.Count == 0)
         {
@@ -116,6 +117,9 @@ public partial class BattleUIManager : MonoBehaviour
                 SelectActMenuCanvas.enabled = true;
                 break;
             case NowOnMenu.SkillSelected:
+                HideEnemyTargetSelectUI();
+                ShowAffinityMarkAll(NowSelectedSkillData.ReturnSkillDataRec());      //다시 모든 적에게 상성 표시
+                ShowSkillMenu();
                 break;
             case NowOnMenu.ItemMenu:
                 HideItemMenu();
@@ -125,7 +129,7 @@ public partial class BattleUIManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 메뉴를 처음 열면 가장 기본적으로 선택되는 버튼은 스킬
+    /// 메뉴를 처음 열면 가장 기본적으로 선택되는 버튼은 스킬/그 외에 선택 버튼 초기화시 스킬로 고정
     /// </summary>
     private void SetDefaultSelectedActMenuButton()
     {
@@ -134,9 +138,14 @@ public partial class BattleUIManager : MonoBehaviour
     }
 
     
-    public bool ReturnIsButtonChanged()
+    public bool ReturnIsButtonDoubleClicked()
     {
-        return IsSelectedChanged;
+        return IsButtonDoubleclicked;
+    }
+
+    public void ResetIsButtonChanged()
+    {
+        IsButtonDoubleclicked = false;
     }
 
     public NowOnMenu ReturnNowChangedMenu()
@@ -157,7 +166,6 @@ public partial class BattleUIManager : MonoBehaviour
         {
             //현재 활성화된 버튼과 유저가 클릭한 버튼이 일치시 취할 행동
             CompareWhichActButtonClicked(Tmp);
-            IsSelectedChanged = true;
         }
         else
         {
@@ -166,7 +174,6 @@ public partial class BattleUIManager : MonoBehaviour
             NowSelectedButton = Tmp;
             Tmp.image.color = SelectedActButtonColor;
             Debug.Log("활성화 된 버튼 교체");
-            IsSelectedChanged = false;
         }
     }
 
@@ -179,27 +186,32 @@ public partial class BattleUIManager : MonoBehaviour
         string TmpButtonName = Tmp.name;
         Debug.Log(TmpButtonName);
 
-        SelectActMenuCanvas.enabled = false;
 
         switch (TmpButtonName)
         {
             case "SkillMenuButton":
                 ShowSkillMenu();        //스킬 선택 메뉴 진입
-                NowSelectedMenu = NowOnMenu.SkillMenu;
                 ShowAffinityMarkAll(NowSelectedSkillData.ReturnSkillDataRec());
                 OnMenuStack.Push(NowOnMenu.SkillMenu);      //열린 메뉴 스택에 스킬 메뉴 push
+                SelectActMenuCanvas.enabled = false;        //행동 메뉴 감추기
                 break;
             case "ItemMenuButton":
                 ShowItemMenu();
                 OnMenuStack.Push(NowOnMenu.ItemMenu);      //열린 메뉴 스택에 아이템 메뉴 push
+                SelectActMenuCanvas.enabled = false;        //행동 메뉴 감추기
                 break;
             case "TalkMenuButton":
+                SelectActMenuCanvas.enabled = false;        //행동 메뉴 감추기
                 break;
             case "ChangeMenuButton":
+                SelectActMenuCanvas.enabled = false;        //행동 메뉴 감추기
                 break;
             case "EscapeMenuButton":
                 break;
             case "PassMenuButton":
+                IsButtonDoubleclicked = true;
+                SetDefaultSelectedActMenuButton();
+                PassMenuButton.image.color = UnselectedActButtonColor;
                 break;
             default:
                 Debug.Log("오류: 버튼명 인식되지 않음");

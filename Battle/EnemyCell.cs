@@ -24,9 +24,9 @@ public class EnemyCell : MonoBehaviour
     [SerializeField] private Slider HPBar;
 
 
-    private OnBattleEnemyObject thisCellEnemyData;
+    private OnBattleEnemyObject thisCellEnemyData;      //이 에너미 셀이 가지게 되는 적의 정보
 
-    private CancellationTokenSource StopTaskToken;      //마크 깜빡이게 하는 UniTask 중단용 토큰
+    //private CancellationTokenSource StopTaskToken;      //마크 깜빡이게 하는 UniTask 중단용 토큰
 
     //아래로 마크 표시 관련 스프라이트
     [SerializeField] private Sprite[] MarkWeak = new Sprite[2];
@@ -58,6 +58,8 @@ public class EnemyCell : MonoBehaviour
 
         thisCellEnemyData = EnemyData;
 
+        SetInformation();
+
         SpriteNameSB.Clear();
         SpriteNameSB.Append("Demon").Append(thisCellEnemyData.ReturnID());
 
@@ -78,12 +80,21 @@ public class EnemyCell : MonoBehaviour
     /// <summary>
     /// 이름, 종족, 레벨, 체력 정보 표시
     /// </summary>
-    public void SetInformation()
+    private void SetInformation()
     {
-        //여기 이름 설정 들어가고
-        //여기 체력 설정 들어가고
-        //여기 종족 설정 들어가고
-        //여기 레벨 설정 들어가고
+        NameTMP.text = thisCellEnemyData.ReturnName();
+        HPTMP.text = thisCellEnemyData.ReturnHP().ToString();
+        TribeTMP.text = thisCellEnemyData.ReturnTribe();
+        LevelTMP.text = thisCellEnemyData.ReturnLevel().ToString();
+    }
+
+
+    /// <summary>
+    /// 타격 맞고 HP 정보 갱신하는 건데 옵저버로 바꿔야 할 필요가 있을까 고찰해야 한다
+    /// </summary>
+    public void UpdateHP()
+    {
+        HPTMP.text = thisCellEnemyData.ReturnHP().ToString();
     }
 
     /// <summary>
@@ -95,7 +106,7 @@ public class EnemyCell : MonoBehaviour
     }
 
     /// <summary>
-    /// 정보 감추기
+    /// 세부 정보 감추기
     /// </summary>
     public void HideInformation()
     {
@@ -103,9 +114,15 @@ public class EnemyCell : MonoBehaviour
     }
 
 
-
+    /// <summary>
+    /// 깜박거려야 하는 마크를 설정 후 작업 시작
+    /// </summary>
+    /// <param name="TargetSkill"></param>
     public void TurnOnAffinityMark(SkillDataRec TargetSkill)
-    {    
+    {
+        if (thisCellEnemyData.ReturnHP() <= 0)
+            return;         //적이 죽은 상태면 표시X
+        
         switch (thisCellEnemyData.ReturnAffinity(TargetSkill.ReturnSkillType()))
         {
             case SkillAffinities.Weak:
@@ -163,7 +180,7 @@ public class EnemyCell : MonoBehaviour
     /// <returns></returns>
     private async UniTaskVoid BlinkMark(Sprite[] SwapMark)
     {
-        StopTaskToken = new CancellationTokenSource();      //마크 깜빡이게 하는 UniTask 중단용 토큰
+        CancellationTokenSource StopTaskToken = new CancellationTokenSource();      //마크 깜빡이게 하는 UniTask 중단용 토큰
 
         int i = 0;      //배열 인덱스 변경용
 
@@ -176,5 +193,10 @@ public class EnemyCell : MonoBehaviour
 
         StopTaskToken.Cancel();
         StopTaskToken.Dispose();
+    }
+
+    public void Click()
+    {
+        BattleUIManager.ClickedEnemyCell = this;
     }
 }

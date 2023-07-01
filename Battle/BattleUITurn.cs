@@ -10,14 +10,16 @@ public partial class BattleUIManager : MonoBehaviour
     [SerializeField] private Image[] EnemyWholeTurnMark;     //적 온전한 턴 마크
     [SerializeField] private Image[] HalfTurnMark;    //플레이어 절반 턴 마크
     [SerializeField] private TextMeshProUGUI TurnText;      //누구의 턴인지 표기하는 텍스트
-    [SerializeField] private HalfMarkAnimationScript[] HalfMarkTurnArray;
+    [SerializeField] private WholeMarkAnimationScript[] PlayerWholeTurnMarkArray;
+    [SerializeField] private HalfMarkAnimationScript[] HalfTurnMarkArray;
 
-    
+    private readonly int MarkArrayCount = 4;
+
     private void InitTurnUI()
     {
         //배틀씬이 켜질 때 턴 마크가 켜져있는 걸 막기 위하여 한 번 더 렌더러를 꺼주는 작업
-        for (int i = 0; i < PlayerWholeTurnMark.Length; i++)
-            PlayerWholeTurnMark[i].enabled = false;
+        //for (int i = 0; i < PlayerWholeTurnMark.Length; i++)
+        //    PlayerWholeTurnMark[i].enabled = false;
         for (int i = 0; i < EnemyWholeTurnMark.Length; i++)
             EnemyWholeTurnMark[i].enabled = false;
     }
@@ -32,7 +34,8 @@ public partial class BattleUIManager : MonoBehaviour
         if (IsPlayerTurn)
         {
             for (int i = 0; i < NumberOfActiveMember; i++)
-                PlayerWholeTurnMark[i].enabled = true;   //현재 활동 가능한 파티 멤버수 만큼 마크 렌더러 켜줌
+                PlayerWholeTurnMarkArray[i].AppearWholeMarkAnime();
+                //PlayerWholeTurnMark[i].enabled = true;   //현재 활동 가능한 파티 멤버수 만큼 마크 렌더러 켜줌
 
             TurnText.text = "<i><color=#3AEC37>Player</color> <color=#FFFFFF>Turn</color></i>";
         }
@@ -50,9 +53,17 @@ public partial class BattleUIManager : MonoBehaviour
     {
         if (IsPlayerTurn)
         {
-            foreach (Image TurnMark in PlayerWholeTurnMark)
+            //foreach (Image TurnMark in PlayerWholeTurnMark)
+            //{
+            //    TurnMark.enabled = false;
+            //}
+            for (int i = 0; i < MarkArrayCount; i++)
             {
-                TurnMark.enabled = false;
+                if (PlayerWholeTurnMarkArray[i].ReturnIsMarkAppeared())
+                    PlayerWholeTurnMarkArray[i].DisappearWholeMarkAnime();
+
+                if (HalfTurnMarkArray[i].ReturnIsMarkAppeared())
+                    HalfTurnMarkArray[i].DisappearHalfMarkAnime();
             }
         }
         else
@@ -61,8 +72,8 @@ public partial class BattleUIManager : MonoBehaviour
             {
                 TurnMark.enabled = false;
             }
-        }
         HideAllHalfTurn();
+        }
     }
 
     /// <summary>
@@ -76,7 +87,9 @@ public partial class BattleUIManager : MonoBehaviour
         if (IsPlayerTurn)
         {
             for (int i = 1; i <= NumberOfUsedTurn; i++)
-                PlayerWholeTurnMark[NumberOfRemainTurn - i].enabled = false;
+                PlayerWholeTurnMarkArray[NumberOfRemainTurn - i].DisappearWholeMarkAnime();
+                //PlayerWholeTurnMark[NumberOfRemainTurn - i].enabled = false;
+
         }
         else
         {
@@ -95,16 +108,16 @@ public partial class BattleUIManager : MonoBehaviour
         {
             //절반턴이 없으면 가장 바깥턴을 절반턴으로 변경
             //HalfTurnMark[NumberOfRemainTurn - 1].enabled = true;
-            HalfMarkTurnArray[NumberOfRemainTurn - 1].AppearHalfMarkAnime();
+            HalfTurnMarkArray[NumberOfRemainTurn - 1].AppearHalfMarkAnime();
         }
         else
         {
             //남아있는 온전한 턴수의 인덱스를 절반 턴수의 인덱스로 치환한다고 생각하면... 편하다...
             for (int i = (NumberOfOnBattle - NumberOfUsedTurn - 1); i >= 0; i--)
             {
-                if (HalfMarkTurnArray[i].ReturnIsMarkAppeared() == false)
+                if (HalfTurnMarkArray[i].ReturnIsMarkAppeared() == false)
                 {
-                    HalfMarkTurnArray[i].AppearHalfMarkAnime();
+                    HalfTurnMarkArray[i].AppearHalfMarkAnime();
                     break;
                 }
                 
@@ -130,11 +143,12 @@ public partial class BattleUIManager : MonoBehaviour
             //절반턴 1개 소모시
             
             //HalfTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 1].enabled = false;
-            HalfMarkTurnArray[NumberOfRemainTurn + NumberOfHalfTurn - 1].DisappearHalfMarkAnime();
+            HalfTurnMarkArray[NumberOfRemainTurn + NumberOfHalfTurn - 1].DisappearHalfMarkAnime();
 
             if (IsPlayerTurn)
             {
-                PlayerWholeTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 1].enabled = false;
+                //PlayerWholeTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 1].enabled = false;
+                PlayerWholeTurnMarkArray[NumberOfRemainTurn + NumberOfHalfTurn - 1].DisappearWholeMarkAnime();
             }
             else
             {
@@ -148,13 +162,15 @@ public partial class BattleUIManager : MonoBehaviour
             //HalfTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 1].enabled = false;
             //HalfTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 2].enabled = false;
 
-            HalfMarkTurnArray[NumberOfRemainTurn + NumberOfHalfTurn - 1].DisappearHalfMarkAnime();
-            HalfMarkTurnArray[NumberOfRemainTurn + NumberOfHalfTurn - 2].DisappearHalfMarkAnime();
+            HalfTurnMarkArray[NumberOfRemainTurn + NumberOfHalfTurn - 1].DisappearHalfMarkAnime();
+            HalfTurnMarkArray[NumberOfRemainTurn + NumberOfHalfTurn - 2].DisappearHalfMarkAnime();
 
             if (IsPlayerTurn)
             {
-                PlayerWholeTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 1].enabled = false;
-                PlayerWholeTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 2].enabled = false;
+                //PlayerWholeTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 1].enabled = false;
+                //PlayerWholeTurnMark[NumberOfRemainTurn + NumberOfHalfTurn - 2].enabled = false;
+                PlayerWholeTurnMarkArray[NumberOfRemainTurn + NumberOfHalfTurn - 1].DisappearWholeMarkAnime();
+                PlayerWholeTurnMarkArray[NumberOfRemainTurn + NumberOfHalfTurn - 2].DisappearWholeMarkAnime();
             }
             else
             {
@@ -175,7 +191,8 @@ public partial class BattleUIManager : MonoBehaviour
     public void PlacePlayerTurn(int ActivePartyMember)
     {
         for (int i = 0; i < ActivePartyMember; i++)
-            PlayerWholeTurnMark[i].enabled = true;   //현재 활동 가능한 파티 멤버수 만큼 마크 렌더러 켜줌
+            PlayerWholeTurnMarkArray[i].AppearWholeMarkAnime();
+            //PlayerWholeTurnMark[i].enabled = true;   //현재 활동 가능한 파티 멤버수 만큼 마크 렌더러 켜줌
 
         TurnText.text = "<i><color=#3AEC37>Player</color> <color=#FFFFFF>Turn</color></i>";
     }
@@ -186,7 +203,8 @@ public partial class BattleUIManager : MonoBehaviour
     /// <param name="MemberNumber"></param>
     public void HidePlayerMark(int TurnNumber)
     {
-        PlayerWholeTurnMark[TurnNumber - 1].enabled = false;
+        //PlayerWholeTurnMark[TurnNumber - 1].enabled = false;
+        PlayerWholeTurnMarkArray[TurnNumber - 1].DisappearWholeMarkAnime();
     }
 
     /// <summary>
@@ -194,11 +212,21 @@ public partial class BattleUIManager : MonoBehaviour
     /// </summary>
     public void HideAllPlayerMark()
     {
-        foreach (Image TurnMark in PlayerWholeTurnMark)
+        //foreach (Image TurnMark in PlayerWholeTurnMark)
+        //{
+        //    TurnMark.enabled = false;
+        //}
+
+        for (int i = 0; i < MarkArrayCount; i++)
         {
-            TurnMark.enabled = false;
+            if (PlayerWholeTurnMarkArray[i].ReturnIsMarkAppeared())
+                PlayerWholeTurnMarkArray[i].DisappearWholeMarkAnime();
+
+            if (HalfTurnMarkArray[i].ReturnIsMarkAppeared())
+                HalfTurnMarkArray[i].DisappearHalfMarkAnime();
         }
-        HideAllHalfTurn();
+
+        //HideAllHalfTurn();
     }
 
     /// <summary>
@@ -227,29 +255,28 @@ public partial class BattleUIManager : MonoBehaviour
     /// </summary>
     public void HideAllEnemyMark()
     {
-        foreach (Image TurnMark in EnemyWholeTurnMark)
-        {
-            TurnMark.enabled = false;
-        }
-        HideAllHalfTurn();
+        //foreach (Image TurnMark in EnemyWholeTurnMark)
+        //{
+        //    TurnMark.enabled = false;
+        //}
+        //HideAllHalfTurn();
     }
 
-    /// <summary>
-    /// 절반턴 표시
-    /// </summary>
-    public void PlaceHalfTurn(int RemainWholeTurn, int HalfTurn)
-    {
-
-    }
 
     /// <summary>
     /// 모든 절반 턴 렌더러 끄기
     /// </summary>
     public void HideAllHalfTurn()
     {
-        foreach (Image TurnMark in HalfTurnMark)
+        //foreach (Image TurnMark in HalfTurnMark)
+        //{
+        //    TurnMark.enabled = false;
+        //}
+
+        for (int i = 0; i < MarkArrayCount; i++)
         {
-            TurnMark.enabled = false;
+            if (HalfTurnMarkArray[i].ReturnIsMarkAppeared())
+                HalfTurnMarkArray[i].DisappearHalfMarkAnime();
         }
     }
 }

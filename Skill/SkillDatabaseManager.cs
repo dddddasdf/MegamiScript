@@ -154,7 +154,7 @@ public record SkillDataRec
     [JsonProperty] private string Name { get; init; }         //스킬 이름
     [JsonProperty] private int UseMP { get; init; }           //소모 마나
     [JsonProperty] private WhichTarget Target { get; init; }  //적용 대상
-    [JsonProperty] private NumberOfTarget? thisTargetNumber { get; init; }   //스킬 대상 개체 수
+    [JsonProperty] private NumberOfTarget thisTargetNumber { get; init; }   //스킬 대상 개체 수
     [JsonProperty] private int MinHits { get; init; }         //최소 횟수
     [JsonProperty] private int MaxHits { get; init; }         //최다 횟수
     [JsonProperty] private int? Power { get; init; }          //위력: 위력이 필요 하지 않은 스킬일 경우 null
@@ -231,6 +231,11 @@ public record SkillDataRec
     public SkillTypeSort ReturnSkillType()
     {
         return SkillType;
+    }
+
+    public NumberOfTarget ReturnNumberOfTarget()
+    {
+        return thisTargetNumber;
     }
 }
 

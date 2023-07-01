@@ -10,13 +10,12 @@ public class HalfMarkAnimationScript : MonoBehaviour
     [SerializeField] private Animation HalfMarkAnimation;
     [SerializeField] private AnimationClip HalfMarkAppearAnimation;
     [SerializeField] private AnimationClip HalfMarkDisappearAnimation;
-
-    private readonly int AnimationIndexAppear = 0;
-    private readonly int AnimationIndexDisappear = 1;
     
     public void AppearHalfMarkAnime()
     {
-        HalfMarkAppearAnimation.legacy = true;
+        if (!HalfMarkAppearAnimation.legacy)
+            HalfMarkAppearAnimation.legacy = true;
+        
         HalfMarkImage.enabled = true;
         HalfMarkAnimation.clip = HalfMarkAppearAnimation;
         HalfMarkAnimation.Play();
@@ -24,7 +23,9 @@ public class HalfMarkAnimationScript : MonoBehaviour
 
     public void DisappearHalfMarkAnime()
     {
-        HalfMarkDisappearAnimation.legacy = true;
+        if (!HalfMarkDisappearAnimation.legacy)
+            HalfMarkDisappearAnimation.legacy = true;
+
         HalfMarkAnimation.clip = HalfMarkDisappearAnimation;
         HalfMarkAnimation.Play();
     }

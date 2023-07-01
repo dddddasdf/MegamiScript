@@ -43,11 +43,10 @@ public partial class BattleUIManager : MonoBehaviour
 
 
     private List<SkillCellData> ShowSkillList = new List<SkillCellData>();        //UI에서 보여주기 위한 스킬 데이터
-    private SkillCellData NowSelectedSkillData = new SkillCellData();
+    private SkillCellData NowSelectedSkillData = new SkillCellData();               //현재 선택된 스킬
     public InfiniteScroll VerticalISkillList = null;
 
-    public bool IsSelectedSkillChanged;          //선택된 스킬이 바뀌었는지 배틀매니저와 정보 교환용
-
+    [SerializeField] private ActivateSkillButton ActivatedSkillButtonObject;
     
 
     #endregion
@@ -74,12 +73,12 @@ public partial class BattleUIManager : MonoBehaviour
                 //원래 선택된 데이터와 새로 선택된 데이터가 같지 않을 경우
                 UpdateData((SkillCellData)data);
                 ShowAffinityMarkAll(NowSelectedSkillData.ReturnSkillDataRec());         //스킬 데이터가 갱신되었으니 상성 표시 마크도 갱신
-                IsSelectedSkillChanged = true;
             }
             else
             {
-                //원래 선택된 데이터와 새로 선택된 데이터가 같을 경우
-                IsSelectedSkillChanged = false;
+                //원래 선택된 데이터와 새로 선택된 데이터가 같을 경우: 배틀매니저의 저장용 전역변수에 현재 선택된 스킬 데이터를 담아준다
+                BattleManager.SelectedSkillDataBuffer = NowSelectedSkillData;
+                IsButtonDoubleclicked = true;       //같은 버튼이 클릭되었음을 기록
             }
 
             while (JobQueue.Count > 0)
@@ -130,6 +129,7 @@ public partial class BattleUIManager : MonoBehaviour
 
             if (i == 0)
             {
+                //첫번째 스킬을 선활성화 상태로 미리 지정
                 NewSkillCellData.SetIsSelected(true);
                 NowSelectedSkillData = NewSkillCellData;
             }
@@ -159,14 +159,39 @@ public partial class BattleUIManager : MonoBehaviour
         VerticalISkillList.UpdateData(NowSelectedSkillData);   //새로 선택된 셀 업데이트
     }
 
+    /// <summary>
+    /// 스킬을 고르고 타겟 선정하는 UI 진입-적 대상 스킬
+    /// </summary>
+    public void ShowEnemyTargetSelectUI()
+    {
+        HideAffinityMarkAll();          //상성 표시 한 번 감춰준다
+        ActivatedSkillButtonObject.ShowActivateSkillButton();
+        ActivatedSkillButtonObject.UpdateActivateSkillData(BattleManager.SelectedSkillDataBuffer);
+        ShowEnemyInformation();
+        HideSkillMenu();
+
+        if (NowSelectedSkillData.ReturnSkillDataRec().ReturnNumberOfTarget() == NumberOfTarget.Single)
+        {
+            //단일 공격 스킬이면 단일 상성 표시만 띄우기
+            ShowAffinityMarkSingle();
+        }
+        else
+        {
+            //그 외면 전체 표시
+            ShowAffinityMarkAll(NowSelectedSkillData.ReturnSkillDataRec());
+        }
+
+        OnMenuStack.Push(NowOnMenu.SkillSelected);      //UI 스택에 push
+    }
 
     /// <summary>
-    /// 선택된 스킬이 바뀌었는지 배틀매니저에게 전달
+    /// 타겟 선정하는 UI에서 빠져나가기-적 대상 스킬
     /// </summary>
-    /// <param name="IsChanged"></param>
-    public void IsSkillChanged(out bool IsChanged)
+    public void HideEnemyTargetSelectUI()
     {
-        IsChanged = this.IsSelectedSkillChanged;
+        ActivatedSkillButtonObject.HideActivateSkillButton();
+        HideEnemyInformation();
+        HideAffinityMarkAll();
     }
 
 

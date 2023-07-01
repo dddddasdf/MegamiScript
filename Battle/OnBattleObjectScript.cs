@@ -330,6 +330,26 @@ public class OnBattleEnemyObject
         return ID;
     }
 
+    public string ReturnName()
+    {
+        return Name;
+    }
+
+    public int ReturnHP()
+    {
+        return HP;
+    }
+
+    public string ReturnTribe()
+    {
+        return Tribe;
+    }
+
+    public int ReturnLevel()
+    {
+        return Level;
+    }
+
     /// <summary>
     /// 공격 받은/받을 스킬 속성에 대한 약점~강점 반환
     /// </summary>
