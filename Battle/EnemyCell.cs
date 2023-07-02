@@ -9,6 +9,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using System.Text;
+using DG.Tweening;
 
 public class EnemyCell : MonoBehaviour
 {
@@ -26,7 +27,7 @@ public class EnemyCell : MonoBehaviour
 
     private OnBattleEnemyObject thisCellEnemyData;      //이 에너미 셀이 가지게 되는 적의 정보
 
-    //private CancellationTokenSource StopTaskToken;      //마크 깜빡이게 하는 UniTask 중단용 토큰
+    private CancellationTokenSource StopTaskToken;      //마크 깜빡이게 하는 UniTask 중단용 토큰
 
     //아래로 마크 표시 관련 스프라이트
     [SerializeField] private Sprite[] MarkWeak = new Sprite[2];
@@ -39,8 +40,6 @@ public class EnemyCell : MonoBehaviour
 
     private StringBuilder SpriteNameSB = new StringBuilder(20); //스프라이트명용 StringBuilder
     
-    private bool TaskWorkManage = false;        //UniTask 동작 탈출용 변수
-
     private void OnDisable()
     {
         //if (!StopTaskToken.IsCancellationRequested)
@@ -126,40 +125,52 @@ public class EnemyCell : MonoBehaviour
         switch (thisCellEnemyData.ReturnAffinity(TargetSkill.ReturnSkillType()))
         {
             case SkillAffinities.Weak:
-                TaskWorkManage = true;
-                BlinkMark(MarkWeak).Forget();
-                EnemyMark.sprite = MarkWeak[0];
-                EnemyMark.enabled = true;
+                MarkTaskActivate(MarkWeak);
                 break;
             case SkillAffinities.Resist:
-                TaskWorkManage = true;
-                BlinkMark(MarkResist).Forget();
-                EnemyMark.sprite = MarkResist[0];
-                EnemyMark.enabled = true;
+                MarkTaskActivate(MarkResist);
                 break;
             case SkillAffinities.Void:
-                TaskWorkManage = true;
-                BlinkMark(MarkVoid).Forget();
-                EnemyMark.sprite = MarkVoid[0];
-                EnemyMark.enabled = true;
+                MarkTaskActivate(MarkVoid);
                 break;
             case SkillAffinities.Reflect:
-                TaskWorkManage = true;
-                BlinkMark(MarkReflect).Forget();
-                EnemyMark.sprite = MarkReflect[0];
-                EnemyMark.enabled = true;
+                MarkTaskActivate(MarkReflect);
                 break;
             case SkillAffinities.Drain:
-                TaskWorkManage = true;
-                BlinkMark(MarkDrain).Forget();
-                EnemyMark.sprite = MarkDrain[0];
-                EnemyMark.enabled = true;
+                MarkTaskActivate(MarkDrain);
                 break;
             default:
                 //상성 없음
                 EnemyMark.enabled = false;
-                TaskWorkManage = false;
                 break;
+        }
+    }
+
+    /// <summary>
+    /// 마크를 깜빡이게 하는 Task 켜기
+    /// </summary>
+    private void MarkTaskActivate(Sprite[] SwapMark)
+    {
+        MarkTaskCancel();
+        //Task 작동 전에 캔슬 요청을 한 번 더 하는 이유: 마크 깜빡임을 켜기 전에 한 번 더 토큰 확인 후 꺼져 있지 않으면 꺼주는 작업을 한다(안 하면 Task가 무한정 쌓일 수 있다)
+
+
+        BlinkMark(SwapMark).Forget();
+        EnemyMark.sprite = SwapMark[0];
+        EnemyMark.enabled = true;
+    }
+
+    /// <summary>
+    /// 마크에 관여하는 Task 캔슬 요청
+    /// </summary>
+    private void MarkTaskCancel()
+    {
+        //StopTaskToken이 null일 경우: 할 필요가 없으니까 넘긴다
+        //StopTaskToken.IsCancellationRequested = true일 경우 해당 토큰은 이미 취소요청이 발행된 이후로 새로 발급받은 적이 없기에 작동하지 않고 있다→중단 요청을 할 필요가 없다(하면 오히려 에러난다)
+        if (StopTaskToken != null && !StopTaskToken.IsCancellationRequested)
+        {
+            StopTaskToken.Cancel();
+            StopTaskToken.Dispose();
         }
     }
 
@@ -168,8 +179,8 @@ public class EnemyCell : MonoBehaviour
     /// </summary>
     public void TurnOffAffinityMark()
     {
-        TaskWorkManage = false;
         EnemyMark.enabled = false;
+        MarkTaskCancel();
     }
 
 
@@ -180,19 +191,20 @@ public class EnemyCell : MonoBehaviour
     /// <returns></returns>
     private async UniTaskVoid BlinkMark(Sprite[] SwapMark)
     {
-        CancellationTokenSource StopTaskToken = new CancellationTokenSource();      //마크 깜빡이게 하는 UniTask 중단용 토큰
-
+        StopTaskToken = new CancellationTokenSource();      //마크 깜빡이게 하는 UniTask 중단용 토큰
         int i = 0;      //배열 인덱스 변경용
 
-        while (TaskWorkManage)
+        while (true)
         {
             await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken: StopTaskToken.Token);   //1초마다 마크 교체
             i = (i + 1) % 2;
             EnemyMark.sprite = SwapMark[i];
         }
+    }
 
-        StopTaskToken.Cancel();
-        StopTaskToken.Dispose();
+    public void GetDamaged()
+    {
+
     }
 
     public void Click()

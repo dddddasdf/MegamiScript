@@ -6,6 +6,22 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
+/// <summary>
+/// 현재 어떤 메뉴창에 진입한 건지 기록용
+/// </summary>
+public enum NowOnMenu
+{
+    Act,
+    SkillMenu,
+    ItemMenu,
+    Talk,
+    Change,
+    Escape,
+    Pass,
+    SkillSelected,
+    ItemSelected
+}
+
 public partial class BattleUIManager : MonoBehaviour
 {
     #region SetVariables
@@ -18,12 +34,22 @@ public partial class BattleUIManager : MonoBehaviour
     [SerializeField] private Button ChangeMenuButton;
     [SerializeField] private Button EscapeMenuButton;
     [SerializeField] private Button PassMenuButton;
+
+    //[SerializeField] private Transform SkillMenuButtonTransform;
+    //[SerializeField] private Transform ItemMenuButtonTransform;
+    //[SerializeField] private Transform TalkMenuButtonTransform;
+    //[SerializeField] private Transform ChangeMenuButtonTransform;
+    //[SerializeField] private Transform EscapeMenuButtonTransform;
+    //[SerializeField] private Transform PassMenuButtonTransform;
+
+
     private int NowSelectedActIndex;    //현재 선택 중인 행동 버튼 인덱스: 키보드 입력용 및 저장용
 
     private Button NowSelectedButton;   //활성화 상태 버튼 저장용
 
     private Color SelectedActButtonColor;    //선택된 행동 버튼 색상
     private Color UnselectedActButtonColor;  //선택되지 않은 행동 버튼 색상
+    private Color _unabledActButtonColor;    //사용 불가능한 행동 버튼 색상
 
     private int ShowNumberofSkill;  //캐릭터가 습득하고 있는 스킬수-해당 수에 맞춰서 슬롯 출력
 
@@ -34,7 +60,6 @@ public partial class BattleUIManager : MonoBehaviour
     private NowOnMenu NowSelectedMenu;
 
     private Stack<NowOnMenu> OnMenuStack = new();
-    private NowOnMenu PopMenu;
     private bool IsGetKeyOK = true;         //화면 전환 애니메이션 중에는 X키 입력 감지 불가능 용으로: 개발 단계 에서는 상시 true로 해두고 애니메이션이 도입되면 온오프 할 수 있게 한다
 
     private Queue<Action> JobQueue = new Queue<Action>();      //순차적으로 진행시킬 작업 목록
@@ -63,6 +88,7 @@ public partial class BattleUIManager : MonoBehaviour
         //초기화
         SelectedActButtonColor = new Color(107/255f, 222/255f, 21/255f);
         UnselectedActButtonColor = new Color(0/255f, 0/255f, 0/255f);
+        _unabledActButtonColor = new Color(80 / 255f, 80 / 255f, 80 / 255f);
 
         NowSelectedActIndex = 1;
 
@@ -73,6 +99,7 @@ public partial class BattleUIManager : MonoBehaviour
         InitTurnUI();
 
         InsertItemData();
+
     }
 
     private void Start()
@@ -106,10 +133,8 @@ public partial class BattleUIManager : MonoBehaviour
             return;
         }
 
-        PopMenu = OnMenuStack.Pop();    //펼쳐진 메뉴 스택에서 현재 펼쳐진 메뉴를 pop
-
         //pop된 메뉴에 따라 분기
-        switch (PopMenu)
+        switch (OnMenuStack.Pop())
         {
             case NowOnMenu.SkillMenu:
                 HideSkillMenu();
@@ -173,7 +198,6 @@ public partial class BattleUIManager : MonoBehaviour
             NowSelectedButton.image.color = UnselectedActButtonColor;
             NowSelectedButton = Tmp;
             Tmp.image.color = SelectedActButtonColor;
-            Debug.Log("활성화 된 버튼 교체");
         }
     }
 
@@ -214,7 +238,6 @@ public partial class BattleUIManager : MonoBehaviour
                 PassMenuButton.image.color = UnselectedActButtonColor;
                 break;
             default:
-                Debug.Log("오류: 버튼명 인식되지 않음");
                 break;
         }
     }
@@ -253,6 +276,25 @@ public partial class BattleUIManager : MonoBehaviour
         SelectActMenuCanvas.enabled = true;
     }
 
+    /// <summary>
+    /// 플레이어의 턴이 되면 사용 불가능해진 버튼들 사용 가능으로 전환
+    /// </summary>
+    public void EnableActButtonPlayerTurn()
+    {
+        ItemMenuButton.interactable = true;
+        TalkMenuButton.interactable = true;
+        ItemMenuButton.image.color = UnselectedActButtonColor;
+        TalkMenuButton.image.color = UnselectedActButtonColor;
+    }
 
-    
+    /// <summary>
+    /// 플레이어 외의 아군 턴이 되면 일부 버튼 사용 불가능으로 전환
+    /// </summary>
+    public void DisableActButtonPartyTurn()
+    {
+        ItemMenuButton.interactable = false;
+        TalkMenuButton.interactable = false;
+        ItemMenuButton.image.color = _unabledActButtonColor;
+        TalkMenuButton.image.color = _unabledActButtonColor;
+    }
 }

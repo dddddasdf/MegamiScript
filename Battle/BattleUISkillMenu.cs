@@ -72,6 +72,7 @@ public partial class BattleUIManager : MonoBehaviour
             {
                 //원래 선택된 데이터와 새로 선택된 데이터가 같지 않을 경우
                 UpdateData((SkillCellData)data);
+                HideAffinityMarkAll();      //상성 표시 마크 한 번 꺼준다
                 ShowAffinityMarkAll(NowSelectedSkillData.ReturnSkillDataRec());         //스킬 데이터가 갱신되었으니 상성 표시 마크도 갱신
             }
             else

@@ -132,7 +132,7 @@ public partial class BattleUIManager : MonoBehaviour
     /// </summary>
     public void ClickEnemyGameobject()
     {
-        if (OnMenuStack.Peek() != NowOnMenu.SkillSelected)
+        if (OnMenuStack.Count == 0 || OnMenuStack.Peek() != NowOnMenu.SkillSelected)
             return;     //적 타게팅하는 단계가 아니면 반응하지 않는다
 
         if (TargetedEnemy == ClickedEnemyCell)

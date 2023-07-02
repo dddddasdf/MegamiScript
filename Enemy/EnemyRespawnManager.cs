@@ -276,7 +276,6 @@ public class EnemyRespawnManager : MonoBehaviour
     /// </summary>
     private void FetchSymbolObject(GameObject PulledObject)
     {
-        Debug.Log("회수");
         PulledObject.SetActive(false);  //회수한 오브젝트 비활성화
         PulledObject.transform.position = new Vector3(1000, 1000, 1000); //회수한 오브젝트의 위치를 동떨어진 곳으로 옮기기
         RandomSpawn();

@@ -69,21 +69,6 @@ public enum PressTurn
 }
 
 
-/// <summary>
-/// 현재 어떤 메뉴창에 진입한 건지 기록용
-/// </summary>
-public enum NowOnMenu
-{
-    Act,
-    SkillMenu,
-    ItemMenu,
-    Talk,
-    Change,
-    Escape,
-    Pass,
-    SkillSelected,
-    ItemSelected
-}
 
 public class BattleManager : MonoBehaviour, IPartyObserver
 {
@@ -419,6 +404,12 @@ public class BattleManager : MonoBehaviour, IPartyObserver
             PartyTurnOrderIndexList.Sort((n1, n2) => NowOnBattlePartyList[n2].ReturnMemberData().ReturnAg().CompareTo(NowOnBattlePartyList[n1].ReturnMemberData().ReturnAg()));
         }
 
+        UIScript.ResetIsButtonChanged();
+        if (NowOnBattlePartyList[PartyTurnOrderIndexList[0]].ReturnIsPlayerCharacter())
+            UIScript.EnableActButtonPlayerTurn();       //플레이어 턴이면 비활성화 된 버튼들 활성화
+        else
+            UIScript.DisableActButtonPartyTurn();       //그 외 파티원 턴이면 일부 버튼 비활성화
+
         UIScript.ActiveTurn(PartyTurnOrderIndexList[0]);        //현재 행동하게 되는 캐릭터의 턴 활성화 표시
         CallSetSkillList();
     }
@@ -588,11 +579,12 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     /// </summary>
     public void PressTrunSkip()
     {
-        if (UIScript.ReturnIsButtonDoubleClicked())
+        if (!UIScript.ReturnIsButtonDoubleClicked())
         {
-            ReduceTurn(PressTurn.ReduceHalfTurn_Party);
-            UIScript.ResetIsButtonChanged();
+            return;     //같은 버튼이 다시 눌린 게 아니라면 다음 행동 수행할 필요X
         }
+
+        ReduceTurn(PressTurn.ReduceHalfTurn_Party);
     }
 
     //아래로 턴 넘기기 동작 체크용 함수들 - 삭제 예정

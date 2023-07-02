@@ -29,7 +29,7 @@ public class HelpTextData : MonoBehaviour
 #if UNITY_EDITOR
         if (LoadHandle.Status == AsyncOperationStatus.Failed)
         {
-            Debug.Log("도움말 텍스트 파일 로드 실패");
+
         }
 
 #endif
