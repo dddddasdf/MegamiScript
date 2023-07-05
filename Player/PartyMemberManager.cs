@@ -346,7 +346,7 @@ public class PartyMemberData
     /// </summary>
     /// <param name="AttackedSkillType"></param>
     /// <returns></returns>
-    public SkillAffinities? ReturnMatchingAffinity(SkillTypeSort AttackedSkillType)
+    public SkillAffinities? ReturnAffinity(SkillTypeSort AttackedSkillType)
     {
         switch (AttackedSkillType)
         {
@@ -453,7 +453,7 @@ public class PartyMemberData
     /// 현재 체력 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnNowHP()
+    public int ReturnRemainHP()
     {
         return NowHP;
     }
@@ -462,7 +462,7 @@ public class PartyMemberData
     /// 현재 마나 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnNowMP()
+    public int ReturnRemainMP()
     {
         return NowMP;
     }
@@ -775,7 +775,7 @@ public class PartyMemberManager : IPartySubject
     /// <returns></returns>
     public SkillAffinities? CallReturnAffinity(PartyDemonData Target, SkillTypeSort AttackedSkillType)
     {
-        return Target.ReturnMatchingAffinity(AttackedSkillType);
+        return Target.ReturnAffinity(AttackedSkillType);
     }
 
     

@@ -39,7 +39,6 @@ public class BattleMemberCell : MonoBehaviour
     #endregion
 
 
-
     private void OnDisable()
     {
         
@@ -63,10 +62,10 @@ public class BattleMemberCell : MonoBehaviour
             thisCellMemberData = MemberData;
             PartyMemberData Tmp = thisCellMemberData.ReturnMemberData();    //파티 멤버 데이터를 받아올 임시 변수
             NameTMP.text = Tmp.ReturnName();      //이름 출력
-            HPTmp.text = Tmp.ReturnNowHP().ToString();      //현재 체력 출력
-            MPTmp.text = Tmp.ReturnNowMP().ToString();      //현재 마나 출력
-            HPBar.value = ((float)Tmp.ReturnNowHP() / (float)Tmp.ReturnMaxHP()) * 100f;
-            MPBar.value = ((float)Tmp.ReturnNowMP() / (float)Tmp.ReturnMaxMP()) * 100f;
+            HPTmp.text = Tmp.ReturnRemainHP().ToString();      //현재 체력 출력
+            MPTmp.text = Tmp.ReturnRemainMP().ToString();      //현재 마나 출력
+            HPBar.value = ((float)Tmp.ReturnRemainHP() / (float)Tmp.ReturnMaxHP()) * 100f;
+            MPBar.value = ((float)Tmp.ReturnRemainMP() / (float)Tmp.ReturnMaxMP()) * 100f;
 
             NotNowTurnScreen.enabled = false;       //미리 현재 턴 아님 스크린 덧씌워두기
 
@@ -109,10 +108,10 @@ public class BattleMemberCell : MonoBehaviour
             thisCellMemberData = MemberData;
             PartyMemberData Tmp = thisCellMemberData.ReturnMemberData();    //임시 변수
             NameTMP.text = Tmp.ReturnName();      //이름 출력
-            HPTmp.text = Tmp.ReturnNowHP().ToString();      //현재 체력 출력
-            MPTmp.text = Tmp.ReturnNowMP().ToString();      //현재 마나 출력
-            HPBar.value = ((float)Tmp.ReturnNowHP() / (float)Tmp.ReturnMaxHP()) * 100f;
-            MPBar.value = ((float)Tmp.ReturnNowMP() / (float)Tmp.ReturnMaxMP()) * 100f;
+            HPTmp.text = Tmp.ReturnRemainHP().ToString();      //현재 체력 출력
+            MPTmp.text = Tmp.ReturnRemainMP().ToString();      //현재 마나 출력
+            HPBar.value = ((float)Tmp.ReturnRemainHP() / (float)Tmp.ReturnMaxHP()) * 100f;
+            MPBar.value = ((float)Tmp.ReturnRemainMP() / (float)Tmp.ReturnMaxMP()) * 100f;
 
             NotNowTurnScreen.enabled = false;
 
@@ -145,8 +144,8 @@ public class BattleMemberCell : MonoBehaviour
     /// </summary>
     public void RefreshHP()
     {
-        HPTmp.text = thisCellMemberData.ReturnMemberData().ReturnNowHP().ToString();
-        HPBar.value = ((float)thisCellMemberData.ReturnMemberData().ReturnNowHP() / (float)thisCellMemberData.ReturnMemberData().ReturnMaxHP()) * 100f;
+        HPTmp.text = thisCellMemberData.ReturnMemberData().ReturnRemainHP().ToString();
+        HPBar.value = ((float)thisCellMemberData.ReturnMemberData().ReturnRemainHP() / (float)thisCellMemberData.ReturnMemberData().ReturnMaxHP()) * 100f;
     }
 
     /// <summary>
@@ -154,8 +153,8 @@ public class BattleMemberCell : MonoBehaviour
     /// </summary>
     public void RefreshMP()
     {
-        MPTmp.text = thisCellMemberData.ReturnMemberData().ReturnNowMP().ToString();
-        MPBar.value = ((float)thisCellMemberData.ReturnMemberData().ReturnNowMP() / (float)thisCellMemberData.ReturnMemberData().ReturnMaxMP()) * 100f;
+        MPTmp.text = thisCellMemberData.ReturnMemberData().ReturnRemainMP().ToString();
+        MPBar.value = ((float)thisCellMemberData.ReturnMemberData().ReturnRemainMP() / (float)thisCellMemberData.ReturnMemberData().ReturnMaxMP()) * 100f;
     }
 
     /// <summary>

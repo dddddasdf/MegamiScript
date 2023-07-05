@@ -179,4 +179,9 @@ public partial class BattleUIManager : MonoBehaviour
     {
 
     }
+
+    public void ReturnTargetedEnemy()
+    {
+
+    }
 }

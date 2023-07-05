@@ -2,10 +2,45 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public interface IOnBattleObject
+{
+    SkillAffinities? ReturnAffinity(SkillTypeSort AttackSkillType);
+
+    void InitBuff();
+    void IncreaseAttack();
+    void IncreaseDefense();
+
+    int ReturnSt();
+    int ReturnDx();
+    int ReturnMa();
+    int ReturnAg();
+    int ReturnLu();
+    
+    bool ReturnIsSick();
+
+    void IncreaseAgility();
+    void RemoveBuff();
+    void DecreaseAttack();
+    void DecreaseDefense();
+    void DecreaseAgility();
+    void RemoveDebuff();
+    int ReturnNumberOfIncreaseAttack();
+    int ReturnNumberOfIncreaseDefense();
+    int ReturnNumberOfIncreaseAgility();
+    int ReturnNumberOfDecreaseAttack();
+    int ReturnNumberOfDecreaseDefense();
+    int ReturnNumberOfDecreaseAgility();
+    void SwitchPhysicEnhancing();
+    void SwitchMagicEnhancing();
+    bool ReturnIsPhysicEnhanced();
+    bool ReturnIsMagicEnhanced();
+
+}
+
 /// <summary>
 /// 전투에 참전 중인 파티 객체
 /// </summary>
-public class OnBattlePartyObject
+public class OnBattlePartyObject : IOnBattleObject
 {
     private PartyMemberData thisMemberData;     //얕은 복사로 받아오는 원본 멤버 데이터
     private bool IsPlayerCharacter;
@@ -30,6 +65,34 @@ public class OnBattlePartyObject
         IsPlayerCharacter = Value;
     }
 
+    public int ReturnRemainHP()
+    {
+        return thisMemberData.ReturnRemainHP();
+    }
+
+    public int ReturnRemainMP()
+    {
+        return thisMemberData.ReturnRemainMP();
+    }
+
+    public int ReturnSt() { return thisMemberData.ReturnSt(); }
+    public int ReturnDx() { return thisMemberData.ReturnDx(); }
+    public int ReturnMa() { return thisMemberData.ReturnMa(); }
+    public int ReturnAg() { return thisMemberData.ReturnAg(); }
+    public int ReturnLu() { return thisMemberData.ReturnLu(); }
+
+    /// <summary>
+    /// 공격 받은/받을 스킬 속성에 대한 약점~강점 반환
+    /// </summary>
+    /// <param name="AttackSkillType"></param>
+    /// <returns></returns>
+    public SkillAffinities? ReturnAffinity(SkillTypeSort AttackSkillType)
+    {
+        return thisMemberData.ReturnAffinity(AttackSkillType);
+    }
+
+    public bool ReturnIsSick() { return thisMemberData.ReturnIsSick(); }
+
 
     #region ManagingBuffDebuff
     /*
@@ -51,7 +114,7 @@ public class OnBattlePartyObject
     /// <summary>
     /// 버프 관련 변수 초기화
     /// </summary>
-    public void InitBuffField()
+    public void InitBuff()
     {
         NumberOfAttackBuff = 0;
         NumberOfDefenseBuff = 0;
@@ -99,7 +162,7 @@ public class OnBattlePartyObject
     /// <summary>
     /// 모든 버프 효과 제거
     /// </summary>
-    public void ResetBuff()
+    public void RemoveBuff()
     {
         NumberOfAttackBuff = 0;
         NumberOfDefenseBuff = 0;
@@ -140,7 +203,7 @@ public class OnBattlePartyObject
     /// <summary>
     /// 모든 디버프 효과 제거
     /// </summary>
-    public void ResetDebuff()
+    public void RemoveDebuff()
     {
         NumberOfAttackDebuff = 0;
         NumberOfDefenseDebuff = 0;
@@ -153,7 +216,7 @@ public class OnBattlePartyObject
     /// 공격력 증가 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnIncreasedAttack()
+    public int ReturnNumberOfIncreaseAttack()
     {
         return NumberOfAttackBuff;
     }
@@ -162,7 +225,7 @@ public class OnBattlePartyObject
     /// 방어력 증가 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnIncreasedDefense()
+    public int ReturnNumberOfIncreaseDefense()
     {
         return NumberOfDefenseBuff;
     }
@@ -171,7 +234,7 @@ public class OnBattlePartyObject
     /// 민첩성(명중, 회피) 증가 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnIncreasedAgility()
+    public int ReturnNumberOfIncreaseAgility()
     {
         return NumberOfAgilityBuff;
     }
@@ -180,7 +243,7 @@ public class OnBattlePartyObject
     /// 공격력 감소 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnDecreasedAttack()
+    public int ReturnNumberOfDecreaseAttack()
     {
         return NumberOfAttackDebuff;
     }
@@ -189,7 +252,7 @@ public class OnBattlePartyObject
     /// 방어력 감소 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnDecreasedDefense()
+    public int ReturnNumberOfDecreaseDefense()
     {
         return NumberOfDefenseDebuff;
     }
@@ -198,7 +261,7 @@ public class OnBattlePartyObject
     /// 민첩성(명중, 회피) 감소 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnDecreasedAgility()
+    public int ReturnNumberOfDecreaseAgility()
     {
         return NumberOfAgilityDebuff;
     }
@@ -244,7 +307,7 @@ public class OnBattlePartyObject
 /// <summary>
 /// 전투에 참전 중인 적 개체
 /// </summary>
-public class OnBattleEnemyObject
+public class OnBattleEnemyObject : IOnBattleObject
 {
     public OnBattleEnemyObject(EnemyDataRec CopyEnemyData)
     {
@@ -252,8 +315,10 @@ public class OnBattleEnemyObject
         this.Name = CopyEnemyData.ReturnName();
         this.Tribe = CopyEnemyData.ReturnTrbie();
         this.Level = CopyEnemyData.ReturnLevel();
-        this.HP = CopyEnemyData.ReturnHP();
-        this.MP = CopyEnemyData.ReturnMP();
+        this.RemainHP = CopyEnemyData.ReturnHP();
+        this.MaxHP = CopyEnemyData.ReturnHP();
+        this.RemainMP = CopyEnemyData.ReturnMP();
+        this.MaxMP = CopyEnemyData.ReturnMP();
         this.St = CopyEnemyData.ReturnSt();
         this.Dx = CopyEnemyData.ReturnDx();
         this.Ma = CopyEnemyData.ReturnMa();
@@ -287,8 +352,9 @@ public class OnBattleEnemyObject
     
     //가변 변수
     #region VariableField
-    private int HP;
-    private int MP;
+    private int RemainHP;
+    private int RemainMP;
+    private AilmentType NowAilment = AilmentType.None;  //현재 걸려있는 상태이상
 
     /// <summary>
     /// 악마가 자동으로 습득해둔 스킬 ID 리스트
@@ -305,6 +371,8 @@ public class OnBattleEnemyObject
     private string Name { get; init; }
     private string Tribe { get; init; }
     private int Level { get; init; }
+    private int MaxHP { get; init; }
+    private int MaxMP { get; init; }
     private int St { get; init; }
     private int Dx { get; init; }
     private int Ma { get; init; }
@@ -335,9 +403,23 @@ public class OnBattleEnemyObject
         return Name;
     }
 
-    public int ReturnHP()
+    public int ReturnRemainHP()
     {
-        return HP;
+        return RemainHP;
+    }
+
+    public int ReturnRemainMP()
+    {
+        return RemainMP;
+    }
+
+    public int ReturnMaxHP()
+    {
+        return MaxHP;
+    }
+    public int ReturnMaxMP()
+    {
+        return MaxMP;
     }
 
     public string ReturnTribe()
@@ -350,14 +432,20 @@ public class OnBattleEnemyObject
         return Level;
     }
 
+    public int ReturnSt() { return St; }
+    public int ReturnDx() { return Dx; }
+    public int ReturnMa() { return Ma; }
+    public int ReturnAg() { return Ag; }
+    public int ReturnLu() { return Lu; }
+
     /// <summary>
     /// 공격 받은/받을 스킬 속성에 대한 약점~강점 반환
     /// </summary>
-    /// <param name="AttackSkill"></param>
+    /// <param name="AttackSkillType"></param>
     /// <returns></returns>
-    public SkillAffinities? ReturnAffinity(SkillTypeSort AttackSkill)
+    public SkillAffinities? ReturnAffinity(SkillTypeSort AttackSkillType)
     {
-        switch (AttackSkill)
+        switch (AttackSkillType)
         {
             case SkillTypeSort.Physical:
                 return AffinityPhysical;
@@ -378,6 +466,11 @@ public class OnBattleEnemyObject
             default:
                 return null;
         }
+    }
+
+    public bool ReturnIsSick()
+    {
+        return (NowAilment.HasFlag(AilmentType.Sick));
     }
 
 
@@ -401,7 +494,7 @@ public class OnBattleEnemyObject
     /// <summary>
     /// 버프 관련 변수 초기화
     /// </summary>
-    public void InitBuffField()
+    public void InitBuff()
     {
         NumberOfAttackBuff = 0;
         NumberOfDefenseBuff = 0;
@@ -449,7 +542,7 @@ public class OnBattleEnemyObject
     /// <summary>
     /// 모든 버프 효과 제거
     /// </summary>
-    public void ResetBuff()
+    public void RemoveBuff()
     {
         NumberOfAttackBuff = 0;
         NumberOfDefenseBuff = 0;
@@ -490,7 +583,7 @@ public class OnBattleEnemyObject
     /// <summary>
     /// 모든 디버프 효과 제거
     /// </summary>
-    public void ResetDebuff()
+    public void RemoveDebuff()
     {
         NumberOfAttackDebuff = 0;
         NumberOfDefenseDebuff = 0;
@@ -503,7 +596,7 @@ public class OnBattleEnemyObject
     /// 공격력 증가 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnIncreasedAttack()
+    public int ReturnNumberOfIncreaseAttack()
     {
         return NumberOfAttackBuff;
     }
@@ -512,7 +605,7 @@ public class OnBattleEnemyObject
     /// 방어력 증가 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnIncreasedDefense()
+    public int ReturnNumberOfIncreaseDefense()
     {
         return NumberOfDefenseBuff;
     }
@@ -521,7 +614,7 @@ public class OnBattleEnemyObject
     /// 민첩성(명중, 회피) 증가 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnIncreasedAgility()
+    public int ReturnNumberOfIncreaseAgility()
     {
         return NumberOfAgilityBuff;
     }
@@ -530,7 +623,7 @@ public class OnBattleEnemyObject
     /// 공격력 감소 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnDecreasedAttack()
+    public int ReturnNumberOfDecreaseAttack()
     {
         return NumberOfAttackDebuff;
     }
@@ -539,7 +632,7 @@ public class OnBattleEnemyObject
     /// 방어력 감소 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnDecreasedDefense()
+    public int ReturnNumberOfDecreaseDefense()
     {
         return NumberOfDefenseDebuff;
     }
@@ -548,7 +641,7 @@ public class OnBattleEnemyObject
     /// 민첩성(명중, 회피) 감소 횟수 반환
     /// </summary>
     /// <returns></returns>
-    public int ReturnDecreasedAgility()
+    public int ReturnNumberOfDecreaseAgility()
     {
         return NumberOfAgilityDebuff;
     }

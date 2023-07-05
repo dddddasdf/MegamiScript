@@ -79,6 +79,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     /// </summary>
     private PartyMemberManager TestPMM = new PartyMemberManager();
     private EnemyDatabaseManager TestEDM = new EnemyDatabaseManager();
+    private SkillSystem SkillCalculator = new SkillSystem();
 
 
     private List<MonsterData> BattleEnemyDataList;
@@ -134,6 +135,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     private NowOnMenu PopMenu;
 
     public static SkillCellData SelectedSkillDataBuffer = new();    //선택된 스킬 정보 저장용
+    private SkillTypeSort SelectedSkillTypeCaching;     //현재 선택된 스킬의 타입 캐싱용
 
     #endregion
 
@@ -144,6 +146,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         //PartyMemberArray = new PartyMember[4];  //파티 정보 배열 초기화
         NowOnBattlePartyList.Capacity = MaxNumberOfEntry;       //불필요한 재할당이 일어나지 않도록 미리 크기 설정
         PartyTurnOrderList.Capacity = MaxNumberOfEntry;     //불필요한 재할당이 일어나지 않도록 미리 크기 설정
+        SelectedSkillDataBuffer = null;     //스킬 데이터 버퍼용 정적 변수 비워주기
 
         TestPMM.LoadTMP();
         TestEDM.InitEnemyDatabaseManager();
@@ -168,6 +171,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     private void OnDisable()
     {
         //GameManager.Instance.ReturnPartyManager().RemoveObserver(this);     //파티매니저의 옵저버 리스트에서 해제
+        SelectedSkillDataBuffer = null;     //씬이 교체될 때 버퍼용 정적 변수 초기화
     }
 
     /// <summary>
@@ -293,26 +297,55 @@ public class BattleManager : MonoBehaviour, IPartyObserver
             return;         //같은 스킬 버튼이 더블클릭된 게 아니면 다음 단계로 넘어가지 않는다
         }
 
-        UIScript.ShowEnemyTargetSelectUI();     //고른 스킬이 무엇인지 띄워주는 화면 호출
-        UIScript.ResetIsButtonChanged();        //더블 클릭 감지용 변수 원상복구
+        SelectedSkillTypeCaching = SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnSkillType();
+
+        if (SelectedSkillTypeCaching == SkillTypeSort.Recover || SelectedSkillTypeCaching == SkillTypeSort.Support)
+        {
+            //회복 또는 서포트 계열: 아군 타게팅 UI
+        }
+        else
+        {
+            //그 외 적 공격 계열: 적 타게팅 UI
+            UIScript.ShowEnemyTargetSelectUI();     //고른 스킬이 무엇인지 띄워주는 화면 호출
+        }
+
         
+        UIScript.ResetIsButtonChanged();        //더블 클릭 감지용 변수 원상복구
     }
 
     /// <summary>
-    /// 현재 고른 스킬이  최종적으로 타격할 적에게 마크 표시하라고 하는 함수
+    /// 현재 고른 스킬 발동
     /// </summary>
-    public void CheckSelectedSkillMark()
+    public void ClickSelectedSkill()
+    {
+        switch (SelectedSkillTypeCaching)
+        {
+            case SkillTypeSort.Physical:
+            case SkillTypeSort.Gun:
+            case SkillTypeSort.Fire:
+            case SkillTypeSort.Ice:
+            case SkillTypeSort.Electric:
+            case SkillTypeSort.Force:
+            case SkillTypeSort.Light:
+            case SkillTypeSort.Dark:
+            case SkillTypeSort.Almighty:
+            case SkillTypeSort.Recover:
+            case SkillTypeSort.Support:
+            case SkillTypeSort.Ailment:
+                break;
+            default:
+                return;
+        }
+    }
+
+    
+    private void ActivateMagicSkill()
     {
         if (SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnNumberOfTarget() == NumberOfTarget.Single)
         {
 
         }
-        else
-        {
-
-        }
     }
-
 
 
     #endregion

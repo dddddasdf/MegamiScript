@@ -82,9 +82,10 @@ public class EnemyCell : MonoBehaviour
     private void SetInformation()
     {
         NameTMP.text = thisCellEnemyData.ReturnName();
-        HPTMP.text = thisCellEnemyData.ReturnHP().ToString();
+        HPTMP.text = thisCellEnemyData.ReturnRemainHP().ToString();
         TribeTMP.text = thisCellEnemyData.ReturnTribe();
         LevelTMP.text = thisCellEnemyData.ReturnLevel().ToString();
+        HPBar.value = ((float)thisCellEnemyData.ReturnRemainHP() / (float)thisCellEnemyData.ReturnMaxHP()) * 100f;
     }
 
 
@@ -93,7 +94,8 @@ public class EnemyCell : MonoBehaviour
     /// </summary>
     public void UpdateHP()
     {
-        HPTMP.text = thisCellEnemyData.ReturnHP().ToString();
+        HPTMP.text = thisCellEnemyData.ReturnRemainHP().ToString();
+        HPBar.value = ((float)thisCellEnemyData.ReturnRemainHP() / (float)thisCellEnemyData.ReturnMaxHP()) * 100f;
     }
 
     /// <summary>
@@ -119,7 +121,7 @@ public class EnemyCell : MonoBehaviour
     /// <param name="TargetSkill"></param>
     public void TurnOnAffinityMark(SkillDataRec TargetSkill)
     {
-        if (thisCellEnemyData.ReturnHP() <= 0)
+        if (thisCellEnemyData.ReturnRemainHP() <= 0)
             return;         //적이 죽은 상태면 표시X
         
         switch (thisCellEnemyData.ReturnAffinity(TargetSkill.ReturnSkillType()))
@@ -202,7 +204,10 @@ public class EnemyCell : MonoBehaviour
         }
     }
 
-    public void GetDamaged()
+    /// <summary>
+    /// 대미지를 입은 "이펙트"를 출력
+    /// </summary>
+    public void ShowDamagedEffect()
     {
 
     }
