@@ -322,6 +322,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         {
             case SkillTypeSort.Physical:
             case SkillTypeSort.Gun:
+                break;
             case SkillTypeSort.Fire:
             case SkillTypeSort.Ice:
             case SkillTypeSort.Electric:
@@ -329,6 +330,8 @@ public class BattleManager : MonoBehaviour, IPartyObserver
             case SkillTypeSort.Light:
             case SkillTypeSort.Dark:
             case SkillTypeSort.Almighty:
+                ActivateMagicSkill();
+                break;
             case SkillTypeSort.Recover:
             case SkillTypeSort.Support:
             case SkillTypeSort.Ailment:
@@ -338,12 +341,48 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         }
     }
 
-    
+    /// <summary>
+    /// 사용한 공격스킬이 마법 스킬일 경우
+    /// </summary>
     private void ActivateMagicSkill()
     {
+        int numberOfHit = SetNumberOfHit();       //받을 히트수를 정한다
+        
+        int CalculatedDamage;       //받을 대미지
+
         if (SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnNumberOfTarget() == NumberOfTarget.Single)
         {
+            SkillCalculator.CalculateMagicDamage(SelectedSkillDataBuffer.ReturnSkillDataRec(), NowOnBattlePartyList[PartyTurnOrderIndexList[0]], UIScript.ReturnTargetedEnemyData(), out CalculatedDamage);
+            //ㄴ매개변수 더러운 거 정리하기
+            Debug.Log("계산된 대미지: " + CalculatedDamage);
+        }
+        else if (SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnNumberOfTarget() == NumberOfTarget.All)
+        {
 
+        }
+        else
+        {
+
+        }
+    }
+
+    /// <summary>
+    /// 공격 스킬들의 랜덤 타수 결정
+    /// </summary>
+    /// <returns></returns>
+    private int SetNumberOfHit()
+    {
+        int minHit = SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnMinHit();
+        int maxHit = SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnMaxHit();
+        if (minHit == maxHit)
+        {
+            //최대 히트수와 최소 히트수가 같다면 굳이 랜덤 굴릴 필요 없이 바로 반환
+            return SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnMaxHit();
+        }
+        else
+        {
+            //아니라면 랜덤한 히트수를 골라서 반환
+            return UnityEngine.Random.Range(minHit, maxHit);
         }
     }
 

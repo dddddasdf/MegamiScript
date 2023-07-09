@@ -9,7 +9,6 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using System.Text;
-using DG.Tweening;
 
 public class EnemyCell : MonoBehaviour
 {
@@ -86,6 +85,11 @@ public class EnemyCell : MonoBehaviour
         TribeTMP.text = thisCellEnemyData.ReturnTribe();
         LevelTMP.text = thisCellEnemyData.ReturnLevel().ToString();
         HPBar.value = ((float)thisCellEnemyData.ReturnRemainHP() / (float)thisCellEnemyData.ReturnMaxHP()) * 100f;
+    }
+
+    public OnBattleEnemyObject ReturnEnemyCellData()
+    {
+        return thisCellEnemyData;
     }
 
 

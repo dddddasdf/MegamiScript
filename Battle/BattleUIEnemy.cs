@@ -180,8 +180,8 @@ public partial class BattleUIManager : MonoBehaviour
 
     }
 
-    public void ReturnTargetedEnemy()
+    public OnBattleEnemyObject ReturnTargetedEnemyData()
     {
-
+        return TargetedEnemy.ReturnEnemyCellData();
     }
 }

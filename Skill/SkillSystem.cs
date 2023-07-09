@@ -18,7 +18,7 @@ public class SkillSystem
     /// <param name="Target"></param>
     /// <param name="NormalAttackDamage"></param>
     /// <param name="IsSwordAttack">주인공은 통상 공격과 "총"통상 공격으로 나뉜다</param>
-    public void CalculatePlayerNormalAttackDamage(OnBattlePartyObject User, OnBattlePartyObject Target, bool IsSwordAttack,out int NormalAttackDamage)
+    public void CalculatePlayerNormalAttackDamage(OnBattlePartyObject User, OnBattlePartyObject Target, bool IsSwordAttack, out int NormalAttackDamage)
     {
         /*
         최소 데미지=(무기 위력+힘)/3(소수 점 이하 반올림)
@@ -170,13 +170,13 @@ public class SkillSystem
     //}
 
     /// <summary>
-    /// 물리 대미지 계산 함수
+    /// 물리/총 대미지 계산 함수
     /// </summary>
     /// <param name="UsedSkill"></param>
     /// <param name="SkillUser"></param>
     /// <param name="Target"></param>
     /// <param name="PhysicDamage"></param>
-    public void CalculatePhysicDamage(SkillDataRec UsedSkill, IOnBattleObject SkillUser, IOnBattleObject Target, out int PhysicDamage)
+    public void CalculatePhysicGunDamage(SkillDataRec UsedSkill, IOnBattleObject SkillUser, IOnBattleObject Target, out int PhysicDamage)
     {
         /*
         { (스킬 위력 + (힘 * 0.75 + 기 * 1.5) ) × 보조 계수 × 약점 보정 ÷ 평균 공격 횟수 + 스킬 + 보정 } + 난수(0~15)  (소수점 이하 잘라내기)
@@ -208,21 +208,8 @@ public class SkillSystem
 
         #region SupportCoeffceint   //보조 계수 계산 구간
 
-        float AttackCoeffcient = 1f;    //보조 계수1: 사용자의 공격력 증가 버프 횟수에 따라 20%P 합연산
-        float DefenseCoeffceint = 1f;   //보조 계수2: 상대방의 방어력 감소 버프 횟수에 따라 20%P 합연산
         float TotalSupportCoeffceint;   //최종 계수: 모든 보조 계수들을 계산 완료한 값
-        for (int i = 0; i < SkillUser.ReturnNumberOfIncreaseAttack(); i++)
-        {
-            //스킬을 사용한 객체의 공격력 증가 보정
-            AttackCoeffcient += IncreaseValueOfAttack;
-        }
-        for (int i = 0; i < Target.ReturnNumberOfDecreaseDefense(); i++)
-        {
-            //스킬을 받을 객체의 방어력 감소 보정
-            DefenseCoeffceint += DecreaseValueOfDefense;
-        }
-
-        TotalSupportCoeffceint = AttackCoeffcient * DefenseCoeffceint;
+        TotalSupportCoeffceint = CalculateCoeffceint(SkillUser, Target);
 
         if (SkillUser.ReturnIsPhysicEnhanced())
             TotalSupportCoeffceint += IncreaseValueOfEnhance;      //컨센트레이트가 적용된 상태면 대미지 합으로 추가 증가
@@ -274,19 +261,11 @@ public class SkillSystem
         float AverageHit = (UsedSkill.ReturnMinHit() + UsedSkill.ReturnMaxHit()) * 0.5f;        //평균 공격 횟수는 (최소 히트수+최대 히트수) / 2
 
         #region SupportCoeffceint   //보조 계수 계산 구간
-
-        float AttackCoeffcient = 1f;    //보조 계수1: 사용자의 공격력 증가 버프 횟수에 따라 20%P 합연산
-        float DefenseCoeffceint = 1f;   //보조 계수2: 상대방의 방어력 감소 버프 횟수에 따라 20%P 합연산
+        
+        
         float TotalSupportCoeffceint;   //최종 계수: 모든 보조 계수들을 계산 완료한 값
-        for (int i = 0; i < SkillUser.ReturnNumberOfIncreaseAttack(); i++)
-        {
-            AttackCoeffcient += IncreaseValueOfAttack;
-        }
-        for (int i = 0; i < Target.ReturnNumberOfIncreaseDefense(); i++)
-        {
-            DefenseCoeffceint += DecreaseValueOfDefense;
-        }
-        TotalSupportCoeffceint = AttackCoeffcient * DefenseCoeffceint;
+        TotalSupportCoeffceint = CalculateCoeffceint(SkillUser, Target);
+
 
         if (SkillUser.ReturnIsMagicEnhanced())
             TotalSupportCoeffceint += IncreaseValueOfEnhance;      //컨센트레이트가 적용된 상태면 대미지 합으로 추가 증가
@@ -296,10 +275,44 @@ public class SkillSystem
 
         #endregion
 
-        int RandomNumber = Random.Range(0, 16);     //난수 0~15
+        int RandomNumber = Random.Range(0,  16);     //난수 0~15
 
         RoughDamage = ((SkillPower + MaOfUser * 4.5f) * 0.33f * TotalSupportCoeffceint * AffinityRevision / AverageHit) + RandomNumber;
 
         MagicDamage = (int)RoughDamage;
+    }
+
+    /// <summary>
+    /// 보조계수 종합치 계산 메소드
+    /// </summary>
+    /// <param name="SkillUser"></param>
+    /// <param name="Target"></param>
+    /// <returns></returns>
+    private float CalculateCoeffceint(IOnBattleObject SkillUser, IOnBattleObject Target)
+    {
+        float AttackCoeffcient = 1f;    //보조 계수1: 사용자의 공격력 증가/감소 버프 횟수에 따라 20%P 합연산
+        float DefenseCoeffceint = 1f;   //보조 계수2: 상대방의 방어력 증가/감소 버프 횟수에 따라 20%P 합연산
+
+        for (int i = 0; i < SkillUser.ReturnNumberOfIncreaseAttack(); i++)
+        {
+            AttackCoeffcient += IncreaseValueOfAttack;
+        }
+
+        for (int i = 0; i < SkillUser.ReturnNumberOfDecreaseAttack(); i++)
+        {
+            AttackCoeffcient -= IncreaseValueOfAttack;
+        }
+
+        for (int i = 0; i < Target.ReturnNumberOfIncreaseDefense(); i++)
+        {
+            DefenseCoeffceint -= DecreaseValueOfDefense;
+        }
+
+        for (int i = 0; i < Target.ReturnNumberOfDecreaseDefense(); i++)
+        {
+            DefenseCoeffceint += DecreaseValueOfDefense;
+        }
+
+        return AttackCoeffcient * DefenseCoeffceint;
     }
 }
