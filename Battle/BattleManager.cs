@@ -14,9 +14,11 @@ using UniRx.Triggers;
 /// <summary>
 /// 프레스 턴 시스템
 /// </summary>
+[Flags]
 public enum PressTurn
 {
-    ReduceAllTurn,      //남아있는 모든 턴 소모
+    None = 0, 
+    ReduceAllTurn = 1 << 0,      //남아있는 모든 턴 소모
     /*
     1. 상대방에게 반사 또는 흡수인 속성으로 공격했을 경우
     2. 도주를 실패했을 경우
@@ -25,7 +27,7 @@ public enum PressTurn
     남아있는 턴을 모두 소모하고 즉시 상대 페이즈로 교체
     */
 
-    ReduceTwoTurn,      //2턴 소모
+    ReduceTwoTurn = 1 << 1,      //2턴 소모
     /*
     1. 상대방에게 무효인 속성으로 공격했을 경우
     2. 상대방이 공격을 회피했을 경우 (하마, 주살의 즉사가 실패한 미스는 제외)
@@ -37,7 +39,7 @@ public enum PressTurn
     3. 절반 턴이 존재하지 않을 경우 2개의 온전한 한 턴을 소모
     */
 
-    ReduceHalfTurn,     //절반 턴 소모
+    ReduceHalfTurn = 1 << 2,     //절반 턴 소모
     /*
     1. 공격을 일반적으로 끝마쳤을 경우(적중, 내성)
     2. 적과 협상 타결
@@ -47,7 +49,7 @@ public enum PressTurn
     2. 절반 턴이 존재하지 않을 경우, 1개의 온전한 한 턴을 소모
     */
 
-    ReduceHalfTurn_Party,   //절반 턴 소모(플레이어 페이즈 전용)
+    ReduceHalfTurn_Party = 1 << 3,   //절반 턴 소모(플레이어 페이즈에서 턴스킵 및 체인지 행동 전용)
     /*
     1. 다음 아군에게 차례를 넘겼을 경우
     2. 아군 소환, 복귀 또는 교체를 했을 경우
@@ -57,7 +59,7 @@ public enum PressTurn
     2. 절반 턴이 존재하지 않을 경우, 1개의 온전한 한 턴을 절반 턴으로 변경
     */
 
-    ChangeHalfTurn,     //온전한 한 턴을 절반 턴으로 변경
+    ChangeHalfTurn = 1 << 4,     //온전한 한 턴을 절반 턴으로 변경
     /*
     1. 크리티컬이 발생하거나 상대방의 약점인 속성으로 공격했을 경우
     2. 스카우트에서 크리티컬 스카우트가 발동할 경우(대상이 만족될 수 있도록 올바르게 골랐을 경우)
@@ -109,7 +111,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     private int NumberOfOnBattleParty = 0;           //현재 생존해서 전투 중인 파티원 수
 
 #nullable enable
-    private List<OnBattleEnemyObject?> NowOnBattleEnemyList = new List<OnBattleEnemyObject?>();
+    private List<OnBattleEnemyObject?> NowOnBattleEnemyList = new List<OnBattleEnemyObject?>();     //전투 중인 적의 파티
 #nullable disable
     private List<int> EnemyTurnOrderList = new List<int>();
     private int NumberOfOnBattleEnemy = 0;          //현재 생존해서 전투 중인 적의 수
@@ -346,24 +348,45 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     /// </summary>
     private void ActivateMagicSkill()
     {
-        int numberOfHit = SetNumberOfHit();       //받을 히트수를 정한다
-        
         int CalculatedDamage;       //받을 대미지
+        int numberOfHit = SetNumberOfHit();       //받을 히트수를 정한다
+        PressTurn reduceTurnFlag = PressTurn.None;       //공격을 끝마치면 턴 차감을 위해 사용하는 변수
+        SkillDataRec NowUsingSkill = SelectedSkillDataBuffer.ReturnSkillDataRec();      //현재 사용된 스킬의 정보
 
         if (SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnNumberOfTarget() == NumberOfTarget.Single)
         {
-            SkillCalculator.CalculateMagicDamage(SelectedSkillDataBuffer.ReturnSkillDataRec(), NowOnBattlePartyList[PartyTurnOrderIndexList[0]], UIScript.ReturnTargetedEnemyData(), out CalculatedDamage);
-            //ㄴ매개변수 더러운 거 정리하기
-            Debug.Log("계산된 대미지: " + CalculatedDamage);
+            //싱글 타겟 스킬: 현재 타겟된 적의 정보를 필요로 한다
+            for (int i = 0; i < numberOfHit; i++)
+            {
+                //공격 횟수만큼 반복문
+                SkillCalculator.CalculateMagicDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], UIScript.ReturnTargetedEnemyData(), out CalculatedDamage);
+                SavePressTurnFlag(UIScript.ReturnTargetedEnemyData().ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
+            }
         }
         else if (SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnNumberOfTarget() == NumberOfTarget.All)
         {
-
+            //전체 타겟 스킬: 전체 타겟 기술은 공격 횟수 1로 고정
+            for (int i = 0; i < NowOnBattleEnemyList.Count; i++)
+            {
+                //현재 생존 중인 적 개체수만큼 공격 반복
+                SkillCalculator.CalculateMagicDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], NowOnBattleEnemyList[i], out CalculatedDamage);
+                SavePressTurnFlag(NowOnBattleEnemyList[i].ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
+            }
         }
         else
         {
-
+            //다단기(전체X 히트수와 대상 랜덤)
+            int randomIndex;        //랜덤 대상 인덱스를 받을 변수
+            
+            //공격 횟수만큼 반복문
+            for (int i = 0; i < numberOfHit; i++)
+            {
+                randomIndex = UnityEngine.Random.Range(0, NowOnBattleEnemyList.Count - 1);
+                SkillCalculator.CalculateMagicDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], NowOnBattleEnemyList[randomIndex], out CalculatedDamage);
+                SavePressTurnFlag(NowOnBattleEnemyList[randomIndex].ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
+            }
         }
+        EndAttackTurn(reduceTurnFlag);    //공격 프로세스를 마치고 해당 캐릭터의 턴 종료
     }
 
     /// <summary>
@@ -384,6 +407,61 @@ public class BattleManager : MonoBehaviour, IPartyObserver
             //아니라면 랜덤한 히트수를 골라서 반환
             return UnityEngine.Random.Range(minHit, maxHit);
         }
+    }
+
+    /// <summary>
+    /// 사용한 스킬의 효과에 따라 플래그 축적
+    /// </summary>
+    /// <param name="skillAffinityOfUsedSkill"></param>
+    /// <param name="reduceTurnFlag"></param>
+    private void SavePressTurnFlag(SkillAffinities? skillAffinityOfUsedSkill, ref PressTurn reduceTurnFlag)
+    {
+        switch (skillAffinityOfUsedSkill)
+        {
+            case SkillAffinities.Weak:
+                reduceTurnFlag |= PressTurn.ChangeHalfTurn;     //약점
+                break;
+            case SkillAffinities.Void:
+                reduceTurnFlag |= PressTurn.ReduceTwoTurn;      //무효
+                break;
+            case SkillAffinities.Reflect:
+            case SkillAffinities.Drain:
+                reduceTurnFlag |= PressTurn.ReduceAllTurn;      //반사, 흡수
+                break;
+            case SkillAffinities.Resist:
+            default:
+                reduceTurnFlag |= PressTurn.ReduceHalfTurn;     //내성, 아무것도 없음
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 축적된 플래그를 바탕으로 공격 후 턴 차감 실행
+    /// </summary>
+    /// <param name="reduceTurnFlag"></param>
+    private void EndAttackTurn(PressTurn reduceTurnFlag)
+    {
+        //공격을 끝마친 후 턴차감 플래그가 쌓인 걸 보고 우선순위순으로 if 조건 걸어둔다->우선순위가 높은 게 존재할 경우 해당 규칙에 따라 턴 차감
+        PressTurn toReduceTurn = PressTurn.None;
+
+        if (reduceTurnFlag.HasFlag(PressTurn.ReduceAllTurn))
+        {
+            toReduceTurn = PressTurn.ReduceAllTurn;
+        }
+        else if (reduceTurnFlag.HasFlag(PressTurn.ReduceTwoTurn))
+        {
+            toReduceTurn = PressTurn.ReduceAllTurn;
+        }
+        else if (reduceTurnFlag.HasFlag(PressTurn.ChangeHalfTurn))
+        {
+            toReduceTurn = PressTurn.ChangeHalfTurn;
+        }
+        else if (reduceTurnFlag.HasFlag(PressTurn.ReduceHalfTurn))
+        {
+            toReduceTurn = PressTurn.ReduceHalfTurn;
+        }
+
+        ReduceTurn(toReduceTurn);
     }
 
 
