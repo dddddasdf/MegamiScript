@@ -11,6 +11,7 @@ public class SkillSystem
     private const float DebuffAttackValueOfSick = 0.75f;      //감기에 의해 깎이는 공격력은 25%
     private const float IncreaseValueOfEnhance = 1.5f;        //차지 or 컨센트레이트에 올라가는 대미지 증가율의 수치는 250%
 
+
     /// <summary>
     /// 주인공용 일반 공격 대미지 계산
     /// </summary>
@@ -223,6 +224,8 @@ public class SkillSystem
         RoughDamage = ((SkillPower + (StOfUser * 0.75f + DxOfUser * 1.5f)) * TotalSupportCoeffceint * AffinityRevision / AverageHit) + RandomNumber;
 
         PhysicDamage = (int)RoughDamage;
+
+        Debug.Log(PhysicDamage);
     }
 
     /// <summary>
@@ -280,6 +283,8 @@ public class SkillSystem
         RoughDamage = ((SkillPower + MaOfUser * 4.5f) * 0.33f * TotalSupportCoeffceint * AffinityRevision / AverageHit) + RandomNumber;
 
         MagicDamage = (int)RoughDamage;
+
+        Debug.Log(MagicDamage);
     }
 
     /// <summary>

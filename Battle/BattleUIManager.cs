@@ -123,6 +123,36 @@ public partial class BattleUIManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 행동 선택 메뉴로 돌아가야 할 때 호출용
+    /// </summary>
+    public void ReturnActMenu()
+    {
+        if (OnMenuStack.Count != 0)
+        {
+            switch (OnMenuStack.Pop())
+            {
+                case NowOnMenu.SkillMenu:
+                    HideSkillMenu();
+                    HideAffinityMarkAll();      //상성 표시 마크 감추기
+                    SelectActMenuCanvas.enabled = true;
+                    break;
+                case NowOnMenu.SkillSelected:
+                    HideEnemyTargetSelectUI();
+                    break;
+                case NowOnMenu.ItemMenu:
+                    HideItemMenu();
+                    SelectActMenuCanvas.enabled = true;
+                    break;
+            }
+        }
+
+        OnMenuStack.Clear();        //메뉴 스택 한 번 비워준다
+
+        SetDefaultSelectedActMenuButton();
+        SelectActMenuCanvas.enabled = true;     //행동 메뉴 출력
+    }
+
+    /// <summary>
     /// 뒤로가기 버튼을 누를 경우 이전 단계 메뉴로 돌아간다
     /// </summary>
     private void GoBackPreviousMenu()
@@ -208,8 +238,6 @@ public partial class BattleUIManager : MonoBehaviour
     private void CompareWhichActButtonClicked(Button Tmp)
     {
         string TmpButtonName = Tmp.name;
-        Debug.Log(TmpButtonName);
-
 
         switch (TmpButtonName)
         {
@@ -234,7 +262,6 @@ public partial class BattleUIManager : MonoBehaviour
                 break;
             case "PassMenuButton":
                 IsButtonDoubleclicked = true;
-                SetDefaultSelectedActMenuButton();
                 PassMenuButton.image.color = UnselectedActButtonColor;
                 break;
             default:

@@ -324,6 +324,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         {
             case SkillTypeSort.Physical:
             case SkillTypeSort.Gun:
+                ActivateAttackSkil(new CalculateSkillDamage(SkillCalculator.CalculatePhysicGunDamage));     //델리게이트로 스킬 시스템의 물리/총 계산 메소드 전달
                 break;
             case SkillTypeSort.Fire:
             case SkillTypeSort.Ice:
@@ -332,7 +333,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
             case SkillTypeSort.Light:
             case SkillTypeSort.Dark:
             case SkillTypeSort.Almighty:
-                ActivateMagicSkill();
+                ActivateAttackSkil(new CalculateSkillDamage(SkillCalculator.CalculateMagicDamage));     //델리게이트로 스킬 시스템의 마법 계산 메소드 전달
                 break;
             case SkillTypeSort.Recover:
             case SkillTypeSort.Support:
@@ -344,9 +345,15 @@ public class BattleManager : MonoBehaviour, IPartyObserver
     }
 
     /// <summary>
-    /// 사용한 공격스킬이 마법 스킬일 경우
+    /// 스킬 시스템 공격 스킬 대미지 계산 메소드 전달용 델리게이트
     /// </summary>
-    private void ActivateMagicSkill()
+    /// <param name="UsedSkill"></param>
+    /// <param name="SkillUser"></param>
+    /// <param name="Target"></param>
+    /// <param name="SkillDamage"></param>
+    private delegate void CalculateSkillDamage(SkillDataRec UsedSkill, IOnBattleObject SkillUser, IOnBattleObject Target, out int SkillDamage);
+
+    private void ActivateAttackSkil(CalculateSkillDamage SkillSystemMethod)
     {
         int CalculatedDamage;       //받을 대미지
         int numberOfHit = SetNumberOfHit();       //받을 히트수를 정한다
@@ -359,7 +366,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
             for (int i = 0; i < numberOfHit; i++)
             {
                 //공격 횟수만큼 반복문
-                SkillCalculator.CalculateMagicDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], UIScript.ReturnTargetedEnemyData(), out CalculatedDamage);
+                SkillSystemMethod(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], UIScript.ReturnTargetedEnemyData(), out CalculatedDamage);
                 SavePressTurnFlag(UIScript.ReturnTargetedEnemyData().ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
             }
         }
@@ -369,7 +376,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
             for (int i = 0; i < NowOnBattleEnemyList.Count; i++)
             {
                 //현재 생존 중인 적 개체수만큼 공격 반복
-                SkillCalculator.CalculateMagicDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], NowOnBattleEnemyList[i], out CalculatedDamage);
+                SkillSystemMethod(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], NowOnBattleEnemyList[i], out CalculatedDamage);
                 SavePressTurnFlag(NowOnBattleEnemyList[i].ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
             }
         }
@@ -377,12 +384,12 @@ public class BattleManager : MonoBehaviour, IPartyObserver
         {
             //다단기(전체X 히트수와 대상 랜덤)
             int randomIndex;        //랜덤 대상 인덱스를 받을 변수
-            
+
             //공격 횟수만큼 반복문
             for (int i = 0; i < numberOfHit; i++)
             {
                 randomIndex = UnityEngine.Random.Range(0, NowOnBattleEnemyList.Count - 1);
-                SkillCalculator.CalculateMagicDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], NowOnBattleEnemyList[randomIndex], out CalculatedDamage);
+                SkillSystemMethod(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], NowOnBattleEnemyList[randomIndex], out CalculatedDamage);
                 SavePressTurnFlag(NowOnBattleEnemyList[randomIndex].ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
             }
         }
@@ -715,6 +722,7 @@ public class BattleManager : MonoBehaviour, IPartyObserver
                 UIScript.DeactiveTurn(PartyTurnOrderIndexList[0]);      //행동턴을 마친 캐릭터의 턴 완료 표시
                 PartyTurnOrderIndexList.RemoveAt(0);           //행동턴을 마친 캐릭터는 턴 대기열에서 빠진다
                 SetPartyTurnOrder();
+                UIScript.ReturnActMenu();
             }
             else
             {
@@ -775,3 +783,98 @@ public class BattleManager : MonoBehaviour, IPartyObserver
 미스는 ㄱㅊ음 추가턴감소 없다
 무효면 턴 2개 날림->물리/총 계열에 달린 추가 효과로는 반응하지 않는다
  */
+
+#region Dummy
+/// <summary>
+/// 사용한 공격스킬이 물리 스킬일 경우
+/// </summary>
+//private void ActivatePhysicSkill()
+//{
+//    int CalculatedDamage;       //받을 대미지
+//    int numberOfHit = SetNumberOfHit();       //받을 히트수를 정한다
+//    PressTurn reduceTurnFlag = PressTurn.None;       //공격을 끝마치면 턴 차감을 위해 사용하는 변수
+//    SkillDataRec NowUsingSkill = SelectedSkillDataBuffer.ReturnSkillDataRec();      //현재 사용된 스킬의 정보
+
+//    if (SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnNumberOfTarget() == NumberOfTarget.Single)
+//    {
+//        //싱글 타겟 스킬: 현재 타겟된 적의 정보를 필요로 한다
+//        for (int i = 0; i < numberOfHit; i++)
+//        {
+//            //공격 횟수만큼 반복문
+//            SkillCalculator.CalculatePhysicGunDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], UIScript.ReturnTargetedEnemyData(), out CalculatedDamage);
+//            SavePressTurnFlag(UIScript.ReturnTargetedEnemyData().ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
+//        }
+//    }
+//    else if (SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnNumberOfTarget() == NumberOfTarget.All)
+//    {
+//        //전체 타겟 스킬: 전체 타겟 기술은 공격 횟수 1로 고정
+//        for (int i = 0; i < NowOnBattleEnemyList.Count; i++)
+//        {
+//            //현재 생존 중인 적 개체수만큼 공격 반복
+//            SkillCalculator.CalculatePhysicGunDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], NowOnBattleEnemyList[i], out CalculatedDamage);
+//            SavePressTurnFlag(NowOnBattleEnemyList[i].ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
+//        }
+//    }
+//    else
+//    {
+//        //다단기(전체X 히트수와 대상 랜덤)
+//        int randomIndex;        //랜덤 대상 인덱스를 받을 변수
+
+//        //공격 횟수만큼 반복문
+//        for (int i = 0; i < numberOfHit; i++)
+//        {
+//            randomIndex = UnityEngine.Random.Range(0, NowOnBattleEnemyList.Count - 1);
+//            SkillCalculator.CalculatePhysicGunDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], NowOnBattleEnemyList[randomIndex], out CalculatedDamage);
+//            SavePressTurnFlag(NowOnBattleEnemyList[randomIndex].ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
+//        }
+//    }
+//    EndAttackTurn(reduceTurnFlag);    //공격 프로세스를 마치고 해당 캐릭터의 턴 종료
+//}
+
+
+///// <summary>
+///// 사용한 공격스킬이 마법 스킬일 경우
+///// </summary>
+//private void ActivateMagicSkill()
+//{
+//    int CalculatedDamage;       //받을 대미지
+//    int numberOfHit = SetNumberOfHit();       //받을 히트수를 정한다
+//    PressTurn reduceTurnFlag = PressTurn.None;       //공격을 끝마치면 턴 차감을 위해 사용하는 변수
+//    SkillDataRec NowUsingSkill = SelectedSkillDataBuffer.ReturnSkillDataRec();      //현재 사용된 스킬의 정보
+
+//    if (SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnNumberOfTarget() == NumberOfTarget.Single)
+//    {
+//        //싱글 타겟 스킬: 현재 타겟된 적의 정보를 필요로 한다
+//        for (int i = 0; i < numberOfHit; i++)
+//        {
+//            //공격 횟수만큼 반복문
+//            SkillCalculator.CalculateMagicDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], UIScript.ReturnTargetedEnemyData(), out CalculatedDamage);
+//            SavePressTurnFlag(UIScript.ReturnTargetedEnemyData().ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
+//        }
+//    }
+//    else if (SelectedSkillDataBuffer.ReturnSkillDataRec().ReturnNumberOfTarget() == NumberOfTarget.All)
+//    {
+//        //전체 타겟 스킬: 전체 타겟 기술은 공격 횟수 1로 고정
+//        for (int i = 0; i < NowOnBattleEnemyList.Count; i++)
+//        {
+//            //현재 생존 중인 적 개체수만큼 공격 반복
+//            SkillCalculator.CalculateMagicDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], NowOnBattleEnemyList[i], out CalculatedDamage);
+//            SavePressTurnFlag(NowOnBattleEnemyList[i].ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
+//        }
+//    }
+//    else
+//    {
+//        //다단기(전체X 히트수와 대상 랜덤)
+//        int randomIndex;        //랜덤 대상 인덱스를 받을 변수
+
+//        //공격 횟수만큼 반복문
+//        for (int i = 0; i < numberOfHit; i++)
+//        {
+//            randomIndex = UnityEngine.Random.Range(0, NowOnBattleEnemyList.Count - 1);
+//            SkillCalculator.CalculateMagicDamage(NowUsingSkill, NowOnBattlePartyList[PartyTurnOrderIndexList[0]], NowOnBattleEnemyList[randomIndex], out CalculatedDamage);
+//            SavePressTurnFlag(NowOnBattleEnemyList[randomIndex].ReturnAffinity(NowUsingSkill.ReturnSkillType()), ref reduceTurnFlag);
+//        }
+//    }
+//    EndAttackTurn(reduceTurnFlag);    //공격 프로세스를 마치고 해당 캐릭터의 턴 종료
+//}
+#endregion
